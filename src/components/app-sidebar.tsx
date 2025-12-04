@@ -20,7 +20,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { 
-  PanelLeft,
   ChevronRight,
   Settings,
   Moon,
@@ -102,7 +101,19 @@ export function AppSidebar() {
   const router = useRouter()
   const pathname = usePathname()
   const [isAvatarHovered, setIsAvatarHovered] = useState(false)
-  const [isVaultOpen, setIsVaultOpen] = useState(true)
+  const [isVaultOpen, setIsVaultOpen] = useState(() => {
+    // Load from localStorage on initial render (client-side only)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebar-vault-open')
+      return saved !== null ? saved === 'true' : true
+    }
+    return true
+  })
+
+  // Persist vault open state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-vault-open', String(isVaultOpen))
+  }, [isVaultOpen])
   
   // Determine the selected item based on current path
   const getSelectedItem = () => {
@@ -141,12 +152,12 @@ export function AppSidebar() {
         <SvgIcon
           src={selectedItem === item.title ? item.iconFilled : item.iconOutline}
           alt={item.title}
-          width={16}
-          height={16}
-          className="text-fg-base"
+          width={18}
+          height={18}
+          className={selectedItem === item.title ? "text-fg-base" : "text-fg-subtle"}
         />
         {state === "expanded" && (
-          <span className="text-fg-subtle">{item.title}</span>
+          <span className={selectedItem === item.title ? "text-fg-base" : "text-fg-subtle"}>{item.title}</span>
         )}
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -161,14 +172,14 @@ export function AppSidebar() {
         {/* Paul Weiss logo/avatar */}
         <div className={cn(
           "flex items-center h-14 transition-colors",
-          state === "expanded" ? "px-2 gap-2" : "px-2 justify-center"
+          state === "expanded" ? "px-2 gap-[6px]" : "px-2 justify-center"
         )}>
           {state === "expanded" ? (
             // Expanded state: avatar + name together with dropdown
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 min-w-0 flex-1 rounded-md px-2 h-[32px] hover:bg-bg-subtle-hover transition-colors">
+                  <button className="flex items-center gap-[6px] min-w-0 flex-1 rounded-md px-2 h-[32px] hover:bg-bg-subtle-hover transition-colors">
                     <Image
                       src="/PW-icon logo.png"
                       alt="Paul Weiss"
@@ -214,7 +225,13 @@ export function AppSidebar() {
                 onClick={toggleSidebar}
                 className="shrink-0 w-[32px] h-[32px] rounded-md hover:bg-bg-subtle-hover transition-colors flex items-center justify-center"
               >
-                <PanelLeft className="w-4 h-4 text-fg-subtle" />
+                <SvgIcon 
+                  src="/central_icons/LeftSidebar - Filled.svg" 
+                  alt="Close sidebar"
+                  width={18}
+                  height={18}
+                  className="text-fg-subtle"
+                />
               </button>
             </>
           ) : (
@@ -229,7 +246,13 @@ export function AppSidebar() {
               )}
             >
               {isAvatarHovered ? (
-                <PanelLeft className="w-4 h-4 text-fg-subtle" />
+                <SvgIcon 
+                  src="/central_icons/LeftSidebar.svg" 
+                  alt="Open sidebar"
+                  width={18}
+                  height={18}
+                  className="text-fg-subtle"
+                />
               ) : (
                 <Image
                   src="/PW-icon logo.png"
@@ -267,48 +290,61 @@ export function AppSidebar() {
                 onOpenChange={setIsVaultOpen}
                 className="group/collapsible"
               >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton
-                      tooltip={state === "collapsed" ? "Vault" : undefined}
-                      onClick={() => {
-                        if (state === "collapsed") {
-                          handleNavigation("/vault")
-                        }
-                      }}
-                      className={cn(
-                        "w-full justify-start gap-[6px] text-sm rounded-md transition-colors",
-                        state === "expanded" ? "px-2 h-[32px]" : "p-0 w-[32px] h-[32px] min-w-[32px] min-h-[32px] flex items-center justify-center",
-                        selectedItem === "Vault" ? "bg-bg-subtle-pressed hover:bg-bg-subtle-pressed" : "hover:bg-bg-subtle-hover"
-                      )}
-                    >
-                      <SvgIcon
-                        src={selectedItem === "Vault" ? "/central_icons/Vault - Filled.svg" : "/central_icons/Vault.svg"}
-                        alt="Vault"
-                        width={16}
-                        height={16}
-                        className="text-fg-base"
-                      />
-                      {state === "expanded" && (
-                        <>
-                          <span className="text-fg-subtle flex-1">Vault</span>
-                          <ChevronRight className="w-4 h-4 text-fg-muted transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                        </>
-                      )}
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
+                {(() => {
+                  // Vault menu item should only show active state when:
+                  // 1. On /vault page directly, OR
+                  // 2. On a vault project AND (submenu is closed OR sidebar is collapsed)
+                  const isOnVaultProject = pathname === "/personal-project" || pathname.startsWith("/vault/")
+                  const isSubmenuVisible = isVaultOpen && state === "expanded"
+                  const isVaultItemActive = pathname === "/vault" || (isOnVaultProject && !isSubmenuVisible)
+                  
+                  return (
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          tooltip={state === "collapsed" ? "Vault" : undefined}
+                          onClick={() => {
+                            if (state === "collapsed") {
+                              handleNavigation("/vault")
+                            }
+                          }}
+                          className={cn(
+                            "w-full justify-start gap-[6px] text-sm rounded-md transition-colors",
+                            state === "expanded" ? "px-2 h-[32px]" : "p-0 w-[32px] h-[32px] min-w-[32px] min-h-[32px] flex items-center justify-center",
+                            isVaultItemActive ? "bg-bg-subtle-pressed hover:bg-bg-subtle-pressed" : "hover:bg-bg-subtle-hover"
+                          )}
+                        >
+                          <SvgIcon
+                            src={isVaultItemActive ? "/central_icons/Vault - Filled.svg" : "/central_icons/Vault.svg"}
+                            alt="Vault"
+                            width={18}
+                            height={18}
+                            className={isVaultItemActive ? "text-fg-base" : "text-fg-subtle"}
+                          />
+                          {state === "expanded" && (
+                            <>
+                              <span className={cn("flex-1", isVaultItemActive ? "text-fg-base" : "text-fg-subtle")}>Vault</span>
+                              <ChevronRight className="w-4 h-4 text-fg-muted transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                            </>
+                          )}
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {vaultProjects.map((project) => (
-                        <SidebarMenuSubItem key={project.id}>
-                          <SidebarMenuSubButton
-                            onClick={() => handleNavigation(project.href)}
-                            className="cursor-pointer"
-                          >
-                            <span className="truncate">{project.name}</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
+                      {vaultProjects.map((project) => {
+                        const isActive = pathname === project.href
+                        return (
+                          <SidebarMenuSubItem key={project.id}>
+                            <SidebarMenuSubButton
+                              onClick={() => handleNavigation(project.href)}
+                              isActive={isActive}
+                              className={cn("cursor-pointer", isActive ? "text-fg-base" : "")}
+                            >
+                              <span className="truncate">{project.name}</span>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        )
+                      })}
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           onClick={() => handleNavigation("/vault")}
@@ -320,6 +356,8 @@ export function AppSidebar() {
                     </SidebarMenuSub>
                   </CollapsibleContent>
                 </SidebarMenuItem>
+                  )
+                })()}
               </Collapsible>
               
               {/* Bottom menu items */}

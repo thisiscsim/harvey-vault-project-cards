@@ -352,37 +352,47 @@ export default function AssistantHomePage() {
               {/* Action Cards Section - Below Chatbox */}
               <div className="mt-3">
                 <div className="flex gap-3 justify-center flex-wrap mx-auto" style={{ maxWidth: '740px' }}>
-                  <button className="py-1 pl-1 pr-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
-                    <div className="p-1.5 bg-bg-subtle rounded-sm flex-shrink-0">
-                      <Image src="/lexis.svg" alt="" width={16} height={16} style={{ width: '16px', height: '16px' }} />
-                    </div>
-                    <span className="text-fg-base text-sm font-medium truncate">LexisNexis</span>
-                    <Plus size={16} className="text-fg-subtle flex-shrink-0" />
-                  </button>
-                  
-                  <button className="py-1 pl-1 pr-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
-                    <div className="p-1.5 bg-bg-subtle rounded-sm flex-shrink-0">
-                      <Image src="/EDGAR.svg" alt="" width={16} height={16} style={{ width: '16px', height: '16px' }} />
-                    </div>
-                    <span className="text-fg-base text-sm font-medium truncate">EDGAR</span>
-                    <Plus size={16} className="text-fg-subtle flex-shrink-0" />
-                  </button>
-                  
-                  <button className="py-1 pl-1 pr-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
-                    <div className="p-1.5 bg-bg-subtle rounded-sm flex-shrink-0">
-                      <Image src="/folderIcon.svg" alt="" width={16} height={16} style={{ width: '16px', height: '16px' }} className="text-fg-subtle" />
-                    </div>
-                    <span className="text-fg-base text-sm font-medium truncate">Amend v Delta IP Litigation</span>
-                    <Plus size={16} className="text-fg-subtle flex-shrink-0" />
-                  </button>
-                  
-                  <button className="py-1 pl-1 pr-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
-                    <div className="p-1.5 bg-bg-subtle rounded-sm flex-shrink-0">
-                      <Image src="/folderIcon.svg" alt="" width={16} height={16} style={{ width: '16px', height: '16px' }} className="text-fg-subtle" />
-                    </div>
-                    <span className="text-fg-base text-sm font-medium truncate">Regulatory Compliance Audit</span>
-                    <Plus size={16} className="text-fg-subtle flex-shrink-0" />
-                  </button>
+                  {[
+                    { icon: "/lexis.svg", label: "LexisNexis", iconClass: "", useSvgIcon: false },
+                    { icon: "/central_icons/Building.svg", label: "EDGAR", iconClass: "text-ui-blue-fg", useSvgIcon: true },
+                    { icon: "/folderIcon.svg", label: "Amend v Delta IP Litigation", iconClass: "", useSvgIcon: false },
+                    { icon: "/folderIcon.svg", label: "Regulatory Compliance Audit", iconClass: "", useSvgIcon: false },
+                  ].map((chip, index) => (
+                    <motion.button
+                      key={chip.label}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.4,
+                        delay: 0.3 + index * 0.08,
+                        ease: [0.25, 0.46, 0.45, 0.94]
+                      }}
+                      className="py-1.5 px-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2"
+                      style={{ maxWidth: '150px' }}
+                    >
+                      {chip.useSvgIcon ? (
+                        <SvgIcon 
+                          src={chip.icon} 
+                          alt="" 
+                          width={16} 
+                          height={16} 
+                          className={chip.iconClass}
+                        />
+                      ) : (
+                        <Image 
+                          src={chip.icon} 
+                          alt="" 
+                          width={16} 
+                          height={16} 
+                          style={{ width: '16px', height: '16px' }} 
+                          className={chip.iconClass || undefined}
+                          unoptimized
+                        />
+                      )}
+                      <span className="text-fg-base text-sm font-normal truncate">{chip.label}</span>
+                      <Plus size={16} className="text-fg-subtle shrink-0" />
+                    </motion.button>
+                  ))}
                 </div>
               </div>
             </div>

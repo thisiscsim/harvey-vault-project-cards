@@ -11,22 +11,23 @@ interface SvgIconProps {
   className?: string
 }
 
-// Cache for SVG content to avoid repeated fetches
+// Cache for SVG content to avoid repeated fetches (keyed by src + dimensions)
 const svgCache = new Map<string, string>()
 
 export function SvgIcon({ src, alt, width = 16, height = 16, className }: SvgIconProps) {
-  const [svgContent, setSvgContent] = useState<string | null>(svgCache.get(src) || null)
+  const cacheKey = `${src}-${width}-${height}`
+  const [svgContent, setSvgContent] = useState<string | null>(svgCache.get(cacheKey) || null)
 
   useEffect(() => {
-    if (svgCache.has(src)) {
-      setSvgContent(svgCache.get(src)!)
+    if (svgCache.has(cacheKey)) {
+      setSvgContent(svgCache.get(cacheKey)!)
       return
     }
 
     fetch(src)
       .then(response => response.text())
       .then(text => {
-        // Add width and height attributes if not present
+        // Replace width and height attributes
         let processedSvg = text
           .replace(/width="[^"]*"/, `width="${width}"`)
           .replace(/height="[^"]*"/, `height="${height}"`)
@@ -39,11 +40,11 @@ export function SvgIcon({ src, alt, width = 16, height = 16, className }: SvgIco
           processedSvg = processedSvg.replace('<svg', `<svg height="${height}"`)
         }
 
-        svgCache.set(src, processedSvg)
+        svgCache.set(cacheKey, processedSvg)
         setSvgContent(processedSvg)
       })
       .catch(console.error)
-  }, [src, width, height])
+  }, [src, cacheKey, width, height])
 
   if (!svgContent) {
     // Return placeholder with same dimensions while loading
