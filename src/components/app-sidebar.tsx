@@ -82,7 +82,7 @@ export function AppSidebar() {
               onMouseLeave={() => state === "collapsed" && setIsAvatarHovered(false)}
               className={cn(
                 "flex-shrink-0 w-[36px] h-[36px] rounded-md transition-colors flex items-center justify-center relative",
-                "hover:bg-sidebar-accent"
+                "hover:bg-bg-subtle-hover"
               )}
             >
               {state === "collapsed" && isAvatarHovered ? (
@@ -113,7 +113,7 @@ export function AppSidebar() {
           {state === "expanded" && (
             <button
               onClick={toggleSidebar}
-              className="flex-shrink-0 w-[36px] h-[36px] rounded-md hover:bg-sidebar-accent transition-colors flex items-center justify-center"
+              className="flex-shrink-0 w-[36px] h-[36px] rounded-md hover:bg-bg-subtle-hover transition-colors flex items-center justify-center"
             >
               <PanelLeft className="w-4 h-4 text-neutral-600" />
             </button>
@@ -136,7 +136,7 @@ export function AppSidebar() {
                     className={cn(
                       "w-full justify-start gap-[6px] text-sm rounded-md transition-colors",
                       state === "expanded" ? "px-3 h-[36px]" : "p-0 w-[36px] h-[36px] min-w-[36px] min-h-[36px] flex items-center justify-center",
-                      selectedItem === item.title ? "bg-neutral-200 hover:bg-neutral-200" : "hover:bg-neutral-100"
+                      selectedItem === item.title ? "bg-bg-subtle-pressed hover:bg-bg-subtle-pressed" : "hover:bg-bg-subtle-hover"
                     )}
                   >
                     <Image

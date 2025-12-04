@@ -1286,7 +1286,7 @@ export default function AssistantChatPage({
             }}
           >
             <div className="mx-auto" style={{ maxWidth: '732px' }}>
-              <div className="px-4 py-3 transition-all duration-200 bg-neutral-100 border border-neutral-200 focus-within:border-neutral-300 flex flex-col" style={{ borderRadius: '12px' }}>
+              <div className="px-4 py-3 transition-all duration-200 bg-bg-subtle border border-neutral-200 focus-within:border-neutral-300 flex flex-col" style={{ borderRadius: '12px' }}>
                 {/* Textarea */}
                 <textarea
                   value={inputValue}
@@ -1303,7 +1303,7 @@ export default function AssistantChatPage({
                     }
                   }}
                   placeholder="Ask Harvey. Use @ for sources and attached files."
-                  className="w-full bg-transparent focus:outline-none text-neutral-900 placeholder-neutral-400 resize-none overflow-hidden"
+                  className="w-full bg-transparent focus:outline-none text-neutral-900 placeholder-fg-muted resize-none overflow-hidden"
                   style={{ 
                     fontSize: '16px', 
                     lineHeight: '24px',

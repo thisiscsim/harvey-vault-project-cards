@@ -254,7 +254,7 @@ export default function AssistantHomePage() {
                 </div>
 
                 {/* Chat Input - Modern composer design */}
-                <div className="px-4 py-3 transition-all duration-200 bg-neutral-100 border border-neutral-200 focus-within:border-neutral-300 flex flex-col" style={{ borderRadius: '12px' }}>
+                <div className="px-4 py-3 transition-all duration-200 bg-bg-subtle border border-neutral-200 focus-within:border-neutral-300 flex flex-col" style={{ borderRadius: '12px' }}>
                   {/* Matter chip at top */}
                   <div className="mb-3">
                     <button className="px-2 py-1 text-neutral-700 border border-neutral-300 rounded-md hover:border-neutral-400 transition-colors" style={{ fontSize: '12px' }}>
@@ -278,7 +278,7 @@ export default function AssistantHomePage() {
                       }
                     }}
                     placeholder="Ask Harvey. Use @ for sources and attached files."
-                    className="w-full bg-transparent focus:outline-none text-neutral-900 placeholder-neutral-400 resize-none overflow-hidden"
+                    className="w-full bg-transparent focus:outline-none text-neutral-900 placeholder-fg-muted resize-none overflow-hidden"
                     style={{ 
                       fontSize: '16px', 
                       lineHeight: '24px',
