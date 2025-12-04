@@ -15,8 +15,8 @@ export default function PersonalProjectPage() {
       <AppSidebar />
       
       {/* Main Content */}
-      <SidebarInset className="overflow-hidden">
-        <div className="h-screen flex flex-col bg-white rounded-[12px]">
+      <SidebarInset>
+        <div className="h-screen flex flex-col bg-bg-base">
           {/* Header with back button */}
           <div 
             className="px-3 py-4 flex items-center" 
@@ -25,22 +25,22 @@ export default function PersonalProjectPage() {
             {/* Back Button */}
             <button
               onClick={() => router.push('/vault')}
-              className="p-2 hover:bg-neutral-100 rounded-md transition-colors"
+              className="p-2 hover:bg-bg-subtle rounded-md transition-colors"
             >
-              <ArrowLeft size={16} className="text-neutral-600" />
+              <ArrowLeft size={16} className="text-fg-subtle" />
             </button>
           </div>
           
           <div className="w-full xl:max-w-[1500px] xl:mx-auto flex flex-col h-full px-10">
             {/* Header */}
             <div className="pb-0" style={{ paddingTop: '12px' }}>
-              <h1 className="text-2xl font-medium text-neutral-900">Nikhil&apos;s Personal Project</h1>
-              <p className="text-sm text-neutral-500 mt-1 mb-6">1,567 files ⋅ 3 queries</p>
+              <h1 className="text-2xl font-medium text-fg-base">Nikhil&apos;s Personal Project</h1>
+              <p className="text-sm text-fg-muted mt-1 mb-6">1,567 files ⋅ 3 queries</p>
             </div>
             
             {/* Artifacts Section */}
             <div className="pb-8">
-              <h2 className="text-base font-medium text-neutral-900 mb-4">Artifacts</h2>
+              <h2 className="text-base font-medium text-fg-base mb-4">Artifacts</h2>
               
               {/* Artifacts Grid */}
               <div className="grid grid-cols-8 gap-4">
@@ -56,8 +56,8 @@ export default function PersonalProjectPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 mb-1 truncate">Item 1.01 disclosure</p>
-                  <p className="text-xs text-neutral-500">Linked to 3 queries</p>
+                    <p className="text-sm font-medium text-fg-base mb-1 truncate">Item 1.01 disclosure</p>
+                  <p className="text-xs text-fg-muted">Linked to 3 queries</p>
                   </div>
                 </div>
                 
@@ -73,8 +73,8 @@ export default function PersonalProjectPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 mb-1 truncate">Item 1.01 disclosure</p>
-                    <p className="text-xs text-neutral-500 truncate">Linked to 1 queries</p>
+                    <p className="text-sm font-medium text-fg-base mb-1 truncate">Item 1.01 disclosure</p>
+                    <p className="text-xs text-fg-muted truncate">Linked to 1 queries</p>
                   </div>
                 </div>
                 
@@ -90,8 +90,8 @@ export default function PersonalProjectPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 mb-1 truncate">Material Adverse Effect Clauses</p>
-                  <p className="text-xs text-neutral-500">Linked to 1 query</p>
+                    <p className="text-sm font-medium text-fg-base mb-1 truncate">Material Adverse Effect Clauses</p>
+                  <p className="text-xs text-fg-muted">Linked to 1 query</p>
                   </div>
                 </div>
                 
@@ -107,8 +107,8 @@ export default function PersonalProjectPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 mb-1 truncate">Key arguments for TRO filing</p>
-                  <p className="text-xs text-neutral-500">Linked to 1 queries</p>
+                    <p className="text-sm font-medium text-fg-base mb-1 truncate">Key arguments for TRO filing</p>
+                  <p className="text-xs text-fg-muted">Linked to 1 queries</p>
                   </div>
                 </div>
                 
@@ -124,8 +124,8 @@ export default function PersonalProjectPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 mb-1 truncate">Extraction of term...</p>
-                  <p className="text-xs text-neutral-500">Linked to 2 queries</p>
+                    <p className="text-sm font-medium text-fg-base mb-1 truncate">Extraction of term...</p>
+                  <p className="text-xs text-fg-muted">Linked to 2 queries</p>
                   </div>
                 </div>
                 
@@ -141,8 +141,8 @@ export default function PersonalProjectPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 mb-1 truncate">Item 1.01 disclosure</p>
-                  <p className="text-xs text-neutral-500">Linked to 2 queries</p>
+                    <p className="text-sm font-medium text-fg-base mb-1 truncate">Item 1.01 disclosure</p>
+                  <p className="text-xs text-fg-muted">Linked to 2 queries</p>
                   </div>
                 </div>
                 
@@ -158,8 +158,8 @@ export default function PersonalProjectPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 mb-1 truncate">Item 1.01 disclosure</p>
-                  <p className="text-xs text-neutral-500">Linked to 1 query</p>
+                    <p className="text-sm font-medium text-fg-base mb-1 truncate">Item 1.01 disclosure</p>
+                  <p className="text-xs text-fg-muted">Linked to 1 query</p>
                   </div>
                 </div>
                 
@@ -175,8 +175,8 @@ export default function PersonalProjectPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 mb-1 truncate">Item 1.01 disclosure</p>
-                  <p className="text-xs text-neutral-500">Linked to 1 query</p>
+                    <p className="text-sm font-medium text-fg-base mb-1 truncate">Item 1.01 disclosure</p>
+                  <p className="text-xs text-fg-muted">Linked to 1 query</p>
                   </div>
                 </div>
               </div>

@@ -776,3 +776,35 @@
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
+
+/* ========================================
+   VIEW TRANSITIONS API - Theme Toggle Animation
+   Top-to-bottom wipe effect
+   ======================================== */
+
+/* Disable default crossfade animation */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Old view (current theme) - fades and stays in place */
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* New view (incoming theme) - wipes from top to bottom */
+::view-transition-new(root) {
+  z-index: 9999;
+  animation: theme-wipe-in 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes theme-wipe-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}

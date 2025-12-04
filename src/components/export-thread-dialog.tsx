@@ -20,7 +20,7 @@ export default function ExportThreadDialog({ isOpen, onClose }: ExportThreadDial
       <DialogContent className="w-[540px] max-w-[540px] p-0 gap-0 overflow-hidden">
         <div className="flex items-center justify-between pl-5 pr-3 py-3">
           <DialogTitle asChild>
-            <h2 className="text-base font-medium text-neutral-900">Export thread</h2>
+            <h2 className="text-base font-medium text-fg-base">Export thread</h2>
           </DialogTitle>
           <DialogClose asChild>
             <Button

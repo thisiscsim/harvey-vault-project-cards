@@ -33,11 +33,11 @@ export default function ReviewTableActionBar({
           className="fixed left-1/2 -translate-x-1/2 z-50 px-6"
           style={{ bottom: '24px', maxWidth: 'calc(100vw - 48px)' }}
         >
-          <div className="bg-neutral-900 text-white rounded-lg shadow-2xl flex items-center gap-1 w-max" style={{ padding: '4px' }}>
+          <div className="bg-bg-interactive text-white rounded-lg shadow-2xl flex items-center gap-1 w-max" style={{ padding: '4px' }}>
             {/* Selection count and clear button */}
             <button
               onClick={onClearSelection}
-              className="flex items-center gap-2 px-3 py-1.5 hover:bg-neutral-800 rounded-md transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 hover:bg-bg-interactive rounded-md transition-colors"
             >
               <span className="text-sm font-medium whitespace-nowrap">
                 {selectedCount} {selectedCount === 1 ? 'document' : 'documents'} selected
@@ -46,14 +46,14 @@ export default function ReviewTableActionBar({
             </button>
 
             {/* Vertical divider */}
-            <div className="w-px bg-neutral-700" style={{ height: '16px' }} />
+            <div className="w-px bg-bg-interactive" style={{ height: '16px' }} />
 
             {/* Action buttons */}
             <div className="flex items-center gap-1">
               {/* Assign to */}
               <button
                 onClick={onAssignTo}
-                className="flex items-center gap-2 px-3 py-1.5 hover:bg-neutral-800 rounded-md transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 hover:bg-bg-interactive rounded-md transition-colors"
               >
                 <UserPlus size={16} />
                 <span className="text-sm font-medium">Assign to</span>
@@ -62,7 +62,7 @@ export default function ReviewTableActionBar({
               {/* Group files */}
               <button
                 onClick={onGroupFiles}
-                className="flex items-center gap-2 px-3 py-1.5 hover:bg-neutral-800 rounded-md transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 hover:bg-bg-interactive rounded-md transition-colors"
               >
                 <Layers size={16} />
                 <span className="text-sm font-medium">Group files</span>
@@ -71,7 +71,7 @@ export default function ReviewTableActionBar({
               {/* Open in Assistant */}
               <button
                 onClick={onOpenInAssistant}
-                className="flex items-center gap-2 px-3 py-1.5 hover:bg-neutral-800 rounded-md transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 hover:bg-bg-interactive rounded-md transition-colors"
               >
                 <Sparkles size={16} />
                 <span className="text-sm font-medium">Open in Assistant</span>
@@ -80,7 +80,7 @@ export default function ReviewTableActionBar({
               {/* Delete */}
               <button
                 onClick={onDelete}
-                className="flex items-center gap-2 px-3 py-1.5 hover:bg-neutral-800 rounded-md transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 hover:bg-bg-interactive rounded-md transition-colors"
               >
                 <Trash2 size={16} />
                 <span className="text-sm font-medium">Delete</span>
@@ -89,7 +89,7 @@ export default function ReviewTableActionBar({
               {/* Export */}
               <button
                 onClick={onExport}
-                className="flex items-center gap-2 px-3 py-1.5 hover:bg-neutral-800 rounded-md transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 hover:bg-bg-interactive rounded-md transition-colors"
               >
                 <Download size={16} />
                 <span className="text-sm font-medium">Export</span>

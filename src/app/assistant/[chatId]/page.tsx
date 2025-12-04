@@ -566,7 +566,7 @@ export default function AssistantChatPage({
       const textarea = document.querySelector('textarea');
       if (textarea) {
         textarea.style.height = 'auto';
-        textarea.style.height = '32px'; // Reset to minHeight
+        textarea.style.height = '60px'; // Reset to minHeight
       }
       
       // Determine artifact type using weighted keyword scoring
@@ -851,8 +851,8 @@ export default function AssistantChatPage({
       <AppSidebar />
       
       {/* Main Content */}
-      <SidebarInset className="overflow-hidden">
-        <div ref={containerRef} className="h-screen flex text-sm bg-white rounded-[12px]" style={{ fontSize: '14px', lineHeight: '20px' }}>
+      <SidebarInset>
+        <div ref={containerRef} className="h-screen flex text-sm" style={{ fontSize: '14px', lineHeight: '20px' }}>
           {/* AI Chat Interface - Left Panel */}
           <AnimatePresence mode="wait">
             {chatOpen && (
@@ -860,7 +860,7 @@ export default function AssistantChatPage({
                 key="chat-panel"
                 initial={isChatToggling ? { width: 0, opacity: 0 } : false}
                 animate={isResizing ? undefined : { 
-                  width: anyArtifactPanelOpen ? chatWidth : '100%',
+                  width: anyArtifactPanelOpen ? chatWidth : (sourcesDrawerOpen ? 'calc(100% - 400px)' : '100%'),
                   opacity: 1
                 }}
                 exit={{ width: 0, opacity: 0 }}
@@ -873,20 +873,20 @@ export default function AssistantChatPage({
                     setIsChatToggling(false);
                   }
                 }}
-                className="flex relative overflow-hidden bg-white"
+                className="flex relative overflow-hidden bg-bg-base"
                 style={{ 
                   flexShrink: 0,
                   ...(isResizing && anyArtifactPanelOpen ? { width: chatWidth } : {})
                 }}
               >
-        <div className="flex flex-col bg-white relative" style={{ 
+        <div className="flex flex-col bg-bg-base relative" style={{ 
           width: anyArtifactPanelOpen ? chatWidth - 1 : '100%',
           minWidth: 0
         }}>
 
           {/* Header */}
           <motion.div 
-            className="px-3 py-4 border-b border-neutral-200 flex items-center justify-between" 
+            className="px-3 py-4 border-b border-border-base flex items-center justify-between" 
             style={{ height: '52px' }}
             initial={initialMessage && isFromHomepage && !hasPlayedAnimationsRef.current ? { opacity: 0 } : {}}
             animate={{ opacity: 1 }}
@@ -897,13 +897,13 @@ export default function AssistantChatPage({
               {/* Back Button */}
               <button
                 onClick={() => router.push('/assistant')}
-                className="p-2 hover:bg-neutral-100 rounded-md transition-colors mr-1"
+                className="p-2 hover:bg-bg-subtle rounded-md transition-colors mr-1"
               >
-                <ArrowLeft size={16} className="text-neutral-600" />
+                <ArrowLeft size={16} className="text-fg-subtle" />
               </button>
               
               {/* Vertical Separator */}
-              <div className="w-px bg-neutral-200 mr-3" style={{ height: '20px' }}></div>
+              <div className="w-px bg-bg-subtle-pressed mr-3" style={{ height: '20px' }}></div>
               
               {/* Editable Chat Title */}
               {isEditingChatTitle ? (
@@ -924,7 +924,7 @@ export default function AssistantChatPage({
                       e.target.scrollLeft = 0;
                     }, 0);
                   }}
-                  className="text-neutral-900 font-medium bg-neutral-100 border border-neutral-400 outline-none px-2 py-1.5 -ml-2 rounded-md mr-4 text-sm"
+                  className="text-fg-base font-medium bg-bg-subtle border border-border-interactive outline-none px-2 py-1.5 -ml-2 rounded-md mr-4 text-sm"
                   style={{ 
                     width: `${Math.min(Math.max(editedChatTitle.length * 8 + 40, 120), 600)}px`,
                     height: '32px'
@@ -937,7 +937,7 @@ export default function AssistantChatPage({
                     setIsEditingChatTitle(true);
                     setEditedChatTitle(currentChatTitle);
                   }}
-                  className="text-neutral-900 font-medium truncate mr-4 px-2 py-1.5 -ml-2 rounded-md hover:bg-neutral-100 transition-colors cursor-pointer text-left text-sm"
+                  className="text-fg-base font-medium truncate mr-4 px-2 py-1.5 -ml-2 rounded-md hover:bg-bg-subtle transition-colors cursor-pointer text-left text-sm"
                   style={{ minWidth: 0, height: '32px' }}
                 >
                   {currentChatTitle}
@@ -972,8 +972,8 @@ export default function AssistantChatPage({
               // When artifact panel is expanded, show dropdown menu
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="p-2 hover:bg-neutral-100 rounded-md transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-600">
+                  <button className="p-2 hover:bg-bg-subtle rounded-md transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-fg-subtle">
                       <circle cx="5" cy="12" r="1"/>
                       <circle cx="12" cy="12" r="1"/>
                       <circle cx="19" cy="12" r="1"/>
@@ -1021,7 +1021,7 @@ export default function AssistantChatPage({
               <div className="mx-auto" style={{ maxWidth: '740px' }}>
 
             {messages.length === 0 ? (
-              <div className="text-center text-neutral-500 mt-8">
+              <div className="text-center text-fg-muted mt-8">
                 <p>Start a conversation with Harvey</p>
               </div>
             ) : (
@@ -1030,8 +1030,8 @@ export default function AssistantChatPage({
                   {/* Avatar/Icon */}
                   <div className="flex-shrink-0">
                     {message.role === 'user' ? (
-                      <div className="w-6 h-6 bg-white border border-neutral-200 rounded-full flex items-center justify-center">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-600">
+                      <div className="w-6 h-6 bg-bg-base border border-border-base rounded-full flex items-center justify-center">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-fg-subtle">
                           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                           <circle cx="12" cy="7" r="4"/>
                         </svg>
@@ -1085,7 +1085,7 @@ export default function AssistantChatPage({
                             >
                               {message.type === 'artifact' ? (
                       <div className="space-y-3">
-                        <div className="text-neutral-900 leading-relaxed pl-2">
+                        <div className="text-fg-base leading-relaxed pl-2">
                           {message.content}
                         </div>
                         <div className="pl-2">
@@ -1127,24 +1127,24 @@ export default function AssistantChatPage({
                         {/* Ghost buttons for AI messages with artifacts */}
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center">
-                              <button className="text-xs text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
+                              <button className="text-xs text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
                                 <Copy className="w-3 h-3" />
                                 Copy
                               </button>
-                              <button className="text-xs text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
+                              <button className="text-xs text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
                                 <Download className="w-3 h-3" />
                                 Export
                               </button>
-                              <button className="text-xs text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
+                              <button className="text-xs text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
                                 <RotateCcw className="w-3 h-3" />
                                 Rewrite
                               </button>
                             </div>
                             <div className="flex items-center gap-1">
-                              <button className="text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm p-1.5">
+                              <button className="text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm p-1.5">
                                 <ThumbsUp className="w-3 h-3" />
                               </button>
-                              <button className="text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm p-1.5">
+                              <button className="text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm p-1.5">
                                 <ThumbsDown className="w-3 h-3" />
                               </button>
                             </div>
@@ -1152,7 +1152,7 @@ export default function AssistantChatPage({
                       </div>
                     ) : (
                       <div>
-                        <div className="text-neutral-900 leading-relaxed pl-2">
+                        <div className="text-fg-base leading-relaxed pl-2">
                           {message.content === 'legal-analysis' ? (
                             <div className="space-y-4">
                               <p>The entitlement of a commercial tenant to self-help rights depends on the jurisdiction and the specific circumstances of the case. Below is an analysis based on federal principles, state laws, and relevant case law:</p>
@@ -1184,20 +1184,20 @@ export default function AssistantChatPage({
                         {/* Sources section for legal analysis */}
                         {message.content === 'legal-analysis' && (
                           <>
-                            <p className="text-xs font-medium text-neutral-600 mt-4 pl-2">Sources</p>
+                            <p className="text-xs font-medium text-fg-subtle mt-4 pl-2">Sources</p>
                             <button 
-                              className="flex items-center gap-2 text-sm text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm px-2 py-1.5 max-w-full"
+                              className="flex items-center gap-2 text-sm text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm px-2 py-1.5 max-w-full"
                               onClick={() => setSourcesDrawerOpen(true)}
                             >
                             {/* Facepile avatars */}
                             <div className="flex -space-x-1.5 flex-shrink-0">
-                              <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center border-[1px] border-white overflow-hidden z-[3]">
+                              <div className="w-5 h-5 rounded-full bg-bg-base flex items-center justify-center border-[1px] border-white overflow-hidden z-[3]">
                                 <Image src="/lexis.svg" alt="LexisNexis" width={20} height={20} className="w-full h-full object-cover" />
                               </div>
-                              <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center border-[1.5px] border-white overflow-hidden z-[2]">
+                              <div className="w-5 h-5 rounded-full bg-bg-base flex items-center justify-center border-[1.5px] border-white overflow-hidden z-[2]">
                                 <Image src="/EDGAR.svg" alt="EDGAR" width={20} height={20} className="w-full h-full object-cover" />
                               </div>
-                              <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center border-[1.5px] border-white overflow-hidden z-[1]">
+                              <div className="w-5 h-5 rounded-full bg-bg-base flex items-center justify-center border-[1.5px] border-white overflow-hidden z-[1]">
                                 <Image src="/bloomberg.jpg" alt="Bloomberg" width={20} height={20} className="w-full h-full object-cover" />
                               </div>
                             </div>
@@ -1208,24 +1208,24 @@ export default function AssistantChatPage({
                         {/* Ghost buttons for AI responses */}
                           <div className="flex items-center justify-between mt-3">
                             <div className="flex items-center">
-                              <button className="text-xs text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
+                              <button className="text-xs text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
                                 <Copy className="w-3 h-3" />
                                 Copy
                               </button>
-                              <button className="text-xs text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
+                              <button className="text-xs text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
                                 <Download className="w-3 h-3" />
                                 Export
                               </button>
-                              <button className="text-xs text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
+                              <button className="text-xs text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
                                 <RotateCcw className="w-3 h-3" />
                                 Rewrite
                               </button>
                             </div>
                             <div className="flex items-center gap-1">
-                              <button className="text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm p-1.5">
+                              <button className="text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm p-1.5">
                                 <ThumbsUp className="w-3 h-3" />
                               </button>
-                              <button className="text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm p-1.5">
+                              <button className="text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm p-1.5">
                                 <ThumbsDown className="w-3 h-3" />
                               </button>
                             </div>
@@ -1241,20 +1241,20 @@ export default function AssistantChatPage({
                     {/* User message content */}
                     {message.role === 'user' && (
                       <>
-                        <div className="text-neutral-900 leading-relaxed pl-2">
+                        <div className="text-fg-base leading-relaxed pl-2">
                           {message.content}
                         </div>
                         {/* Ghost buttons for user messages */}
                         <div className="flex items-center mt-2">
-                          <button className="text-xs text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
+                          <button className="text-xs text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
                             <Copy className="w-3 h-3" />
                             Copy
                           </button>
-                          <button className="text-xs text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
+                          <button className="text-xs text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
                             <ListPlus className="w-3 h-3" />
                             Save prompt
                           </button>
-                          <button className="text-xs text-neutral-700 hover:text-neutral-800 hover:bg-neutral-100 transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
+                          <button className="text-xs text-fg-subtle hover:text-fg-base hover:bg-bg-subtle transition-colors rounded-sm px-2 py-1 flex items-center gap-1.5">
                             <SquarePen className="w-3 h-3" />
                             Edit query
                           </button>
@@ -1271,7 +1271,7 @@ export default function AssistantChatPage({
           
           {/* Input Area - Animation simulating movement from center to bottom */}
           <motion.div 
-            className="px-6 pb-6 overflow-x-hidden relative z-20 bg-white"
+            className="px-6 pb-6 overflow-x-hidden relative z-20 bg-bg-base"
             initial={initialMessage && isFromHomepage && !hasPlayedAnimationsRef.current ? { y: "calc(-45vh + 120px)" } : {}}
             animate={{ y: 0 }}
             transition={initialMessage && isFromHomepage && !hasPlayedAnimationsRef.current ? { 
@@ -1286,7 +1286,7 @@ export default function AssistantChatPage({
             }}
           >
             <div className="mx-auto" style={{ maxWidth: '732px' }}>
-              <div className="px-4 py-3 transition-all duration-200 bg-bg-subtle border border-neutral-200 focus-within:border-neutral-300 flex flex-col" style={{ borderRadius: '12px' }}>
+              <div className="px-4 py-3 transition-all duration-200 bg-bg-subtle border border-border-base focus-within:border-border-strong flex flex-col" style={{ borderRadius: '12px' }}>
                 {/* Textarea */}
                 <textarea
                   value={inputValue}
@@ -1303,7 +1303,7 @@ export default function AssistantChatPage({
                     }
                   }}
                   placeholder="Ask Harvey. Use @ for sources and attached files."
-                  className="w-full bg-transparent focus:outline-none text-neutral-900 placeholder-fg-muted resize-none overflow-hidden"
+                  className="w-full bg-transparent focus:outline-none text-fg-base placeholder-fg-muted resize-none overflow-hidden"
                   style={{ 
                     fontSize: '16px', 
                     lineHeight: '24px',
@@ -1318,13 +1318,13 @@ export default function AssistantChatPage({
                   {/* Left Controls - Icon buttons */}
                   <div className="flex items-center gap-1">
                     <button 
-                      className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-neutral-700 border border-neutral-300 rounded-lg hover:border-neutral-400 transition-colors"
+                      className="w-9 h-9 flex items-center justify-center text-fg-muted hover:text-fg-subtle border border-border-strong rounded-lg hover:border-border-interactive transition-colors"
                     >
                       <Scale size={18} />
                     </button>
                     <button 
                       onClick={() => setIsFileManagementOpen(true)}
-                      className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-neutral-700 border border-neutral-300 rounded-lg hover:border-neutral-400 transition-colors"
+                      className="w-9 h-9 flex items-center justify-center text-fg-muted hover:text-fg-subtle border border-border-strong rounded-lg hover:border-border-interactive transition-colors"
                     >
                       <Paperclip size={18} />
                     </button>
@@ -1334,13 +1334,13 @@ export default function AssistantChatPage({
                   <div className="flex items-center gap-2">
                     {/* Ghost icon buttons container */}
                     <div className="flex items-center">
-                      <button className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200 rounded-lg transition-colors">
+                      <button className="w-9 h-9 flex items-center justify-center text-fg-muted hover:text-fg-subtle hover:bg-bg-subtle-pressed rounded-lg transition-colors">
                         <Mic size={18} />
                       </button>
-                      <button className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200 rounded-lg transition-colors">
+                      <button className="w-9 h-9 flex items-center justify-center text-fg-muted hover:text-fg-subtle hover:bg-bg-subtle-pressed rounded-lg transition-colors">
                         <SlidersHorizontal size={18} />
                       </button>
-                      <button className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200 rounded-lg transition-colors">
+                      <button className="w-9 h-9 flex items-center justify-center text-fg-muted hover:text-fg-subtle hover:bg-bg-subtle-pressed rounded-lg transition-colors">
                         <ListPlus size={18} />
                       </button>
                     </div>
@@ -1349,7 +1349,7 @@ export default function AssistantChatPage({
                     {isLoading ? (
                       <button
                         disabled
-                        className="h-9 flex items-center justify-center bg-neutral-900 text-white rounded-lg transition-all cursor-not-allowed"
+                        className="h-9 flex items-center justify-center bg-bg-interactive text-white rounded-lg transition-all cursor-not-allowed"
                         style={{ width: '44px' }}
                       >
                         <Spinner size="sm" />
@@ -1357,14 +1357,14 @@ export default function AssistantChatPage({
                     ) : inputValue.trim() ? (
                       <button
                         onClick={() => sendMessage()}
-                        className="h-9 flex items-center justify-center bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-all"
+                        className="h-9 flex items-center justify-center bg-bg-interactive text-white rounded-lg hover:bg-bg-interactive transition-all"
                         style={{ width: '44px' }}
                       >
                         <CornerDownLeft size={18} />
                       </button>
                     ) : (
                       <button
-                        className="h-9 flex items-center justify-center bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-all"
+                        className="h-9 flex items-center justify-center bg-bg-subtle-pressed text-fg-subtle rounded-lg hover:bg-bg-component transition-all"
                         style={{ width: '44px' }}
                       >
                         <AudioLines size={20} />
@@ -1411,35 +1411,45 @@ export default function AssistantChatPage({
       )}
       </AnimatePresence>
       
-      {/* Share Dialogs */}
-      <ShareThreadDialog 
-        isOpen={shareThreadDialogOpen} 
-        onClose={() => setShareThreadDialogOpen(false)} 
-      />
-      <ShareArtifactDialog 
-        isOpen={shareArtifactDialogOpen} 
-        onClose={() => setShareArtifactDialogOpen(false)} 
-        artifactTitle={selectedArtifact?.title || "Artifact"}
-      />
+      {/* Sources Panel - Shows as second panel when artifact is closed */}
+      <AnimatePresence>
+                  {sourcesDrawerOpen && !anyArtifactPanelOpen && (
+          <motion.div 
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 400, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{
+              width: PANEL_ANIMATION,
+              opacity: { duration: 0.15, ease: "easeOut" }
+            }}
+            className="h-full bg-bg-base border-l border-border-base flex flex-col overflow-hidden"
+            style={{ 
+              flexShrink: 0
+            }}
+          >
+            {/* Header */}
+            <div className="px-3 py-4 border-b border-border-base flex items-center justify-between" style={{ height: '52px' }}>
+              <p className="text-fg-base font-medium truncate mr-4">Sources</p>
+              <button
+                onClick={() => setSourcesDrawerOpen(false)}
+                className="p-2 hover:bg-bg-subtle rounded-md transition-colors"
+              >
+                <X size={16} className="text-fg-subtle" />
+              </button>
+            </div>
+            
+            {/* Sources Content */}
+            <SourcesDrawer 
+              isOpen={true} 
+              onClose={() => setSourcesDrawerOpen(false)}
+              variant="panel"
+              isLoading={isLoading}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
       
-      {/* Export Dialogs */}
-      <ExportThreadDialog 
-        isOpen={exportThreadDialogOpen} 
-        onClose={() => setExportThreadDialogOpen(false)} 
-      />
-      <ExportReviewDialog 
-        isOpen={exportReviewDialogOpen} 
-        onClose={() => setExportReviewDialogOpen(false)} 
-        artifactTitle={selectedArtifact?.title || "Review"}
-      />
-      <FileManagementDialog 
-        isOpen={isFileManagementOpen} 
-        onClose={() => setIsFileManagementOpen(false)} 
-      />
-        </div>
-      </SidebarInset>
-      
-      {/* Unified Artifact Panel - Separate floating panel */}
+      {/* Unified Artifact Panel - Right Panel */}
       <AnimatePresence>
         {unifiedArtifactPanelOpen && currentArtifactType && (
           <>
@@ -1500,7 +1510,7 @@ export default function AssistantChatPage({
         )}
       </AnimatePresence>
 
-      {/* Legacy Artifact Panel - Separate floating panel */}
+      {/* Legacy Artifact Panel - For backward compatibility */}
       <AnimatePresence>
         {artifactPanelOpen && (
           <ReviewArtifactPanel
@@ -1527,10 +1537,10 @@ export default function AssistantChatPage({
           />
         )}
       </AnimatePresence>
-
-      {/* Sources Panel - Separate floating panel */}
+      
+      {/* Sources Panel - Shows as third panel when artifact is open and above 2xl */}
       <AnimatePresence>
-        {sourcesDrawerOpen && (
+        {sourcesDrawerOpen && (artifactPanelOpen || draftArtifactPanelOpen || reviewArtifactPanelOpen) && isAbove2xl && (
           <motion.div 
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 400, opacity: 1 }}
@@ -1539,19 +1549,19 @@ export default function AssistantChatPage({
               width: PANEL_ANIMATION,
               opacity: { duration: 0.15, ease: "easeOut" }
             }}
-            className="bg-white rounded-[12px] shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.04)] flex flex-col overflow-hidden m-2 ml-0"
+            className="h-full bg-bg-base border-l border-border-base flex flex-col overflow-hidden"
             style={{ 
               flexShrink: 0
             }}
           >
             {/* Header */}
-            <div className="px-4 py-4 flex items-center justify-between" style={{ height: '52px' }}>
-              <p className="text-neutral-900 font-medium truncate mr-4">Sources</p>
+            <div className="px-3 py-4 border-b border-border-base flex items-center justify-between" style={{ height: '52px' }}>
+              <p className="text-fg-base font-medium truncate mr-4">Sources</p>
               <button
                 onClick={() => setSourcesDrawerOpen(false)}
-                className="p-2 hover:bg-neutral-100 rounded-md transition-colors"
+                className="p-2 hover:bg-bg-subtle rounded-md transition-colors"
               >
-                <X size={16} className="text-neutral-600" />
+                <X size={16} className="text-fg-subtle" />
               </button>
             </div>
             
@@ -1565,6 +1575,46 @@ export default function AssistantChatPage({
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* Sources Drawer - Sheet variant when artifact panel is open and below 2xl */}
+      <AnimatePresence>
+        {(artifactPanelOpen || draftArtifactPanelOpen || reviewArtifactPanelOpen) && !isAbove2xl && (
+          <SourcesDrawer 
+            isOpen={sourcesDrawerOpen} 
+            onClose={() => setSourcesDrawerOpen(false)}
+            variant="sheet"
+            isLoading={isLoading}
+          />
+        )}
+      </AnimatePresence>
+      
+      {/* Share Dialogs */}
+      <ShareThreadDialog 
+        isOpen={shareThreadDialogOpen} 
+        onClose={() => setShareThreadDialogOpen(false)} 
+      />
+      <ShareArtifactDialog 
+        isOpen={shareArtifactDialogOpen} 
+        onClose={() => setShareArtifactDialogOpen(false)} 
+        artifactTitle={selectedArtifact?.title || "Artifact"}
+      />
+      
+      {/* Export Dialogs */}
+      <ExportThreadDialog 
+        isOpen={exportThreadDialogOpen} 
+        onClose={() => setExportThreadDialogOpen(false)} 
+      />
+      <ExportReviewDialog 
+        isOpen={exportReviewDialogOpen} 
+        onClose={() => setExportReviewDialogOpen(false)} 
+        artifactTitle={selectedArtifact?.title || "Review"}
+      />
+      <FileManagementDialog 
+        isOpen={isFileManagementOpen} 
+        onClose={() => setIsFileManagementOpen(false)} 
+      />
+        </div>
+      </SidebarInset>
     </div>
   );
 } 

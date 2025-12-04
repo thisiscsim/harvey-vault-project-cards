@@ -128,9 +128,9 @@ export default function ThinkingState({
         onClick={isChild ? undefined : () => setOpen(!open)}
         onMouseEnter={isChild ? undefined : () => setIsHovered(true)}
         onMouseLeave={isChild ? undefined : () => setIsHovered(false)}
-        className={`w-full flex items-start gap-1.5 text-[13px] leading-5 text-neutral-700 py-0 ${!isChild ? 'hover:opacity-80 transition-opacity cursor-pointer px-0' : 'cursor-default px-0'}`}
+        className={`w-full flex items-start gap-1.5 text-[13px] leading-5 text-fg-subtle py-0 ${!isChild ? 'hover:opacity-80 transition-opacity cursor-pointer px-0' : 'cursor-default px-0'}`}
       >
-        <span className="relative flex items-center justify-center text-neutral-700 mt-0.5 w-3.5 h-3.5">
+        <span className="relative flex items-center justify-center text-fg-subtle mt-0.5 w-3.5 h-3.5">
           {isChild ? (
             // Child states always show their variant icon
             getVariantIcon(isLoading)
@@ -212,24 +212,24 @@ export default function ThinkingState({
                 side="right" 
                 align="center"
                 sideOffset={8}
-                className="bg-white border border-neutral-200 text-neutral-700 px-3 py-2 shadow-xs"
+                className="bg-bg-base border border-border-base text-fg-subtle px-3 py-2 shadow-xs"
               >
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between gap-8">
-                  <span className="text-neutral-600">Model:</span>
-                  <span className="text-neutral-900">{timingData.model}</span>
+                  <span className="text-fg-subtle">Model:</span>
+                  <span className="text-fg-base">{timingData.model}</span>
                 </div>
                 <div className="flex justify-between gap-8">
-                  <span className="text-neutral-600">Date:</span>
-                  <span className="text-neutral-900">{timingData.date}</span>
+                  <span className="text-fg-subtle">Date:</span>
+                  <span className="text-fg-base">{timingData.date}</span>
                 </div>
                 <div className="flex justify-between gap-8">
-                  <span className="text-neutral-600">Timestamp:</span>
-                  <span className="text-neutral-900">{timingData.timestamp}</span>
+                  <span className="text-fg-subtle">Timestamp:</span>
+                  <span className="text-fg-base">{timingData.timestamp}</span>
                 </div>
                 <div className="flex justify-between gap-8">
-                  <span className="text-neutral-600">Response time:</span>
-                  <span className="text-neutral-900">{timingData.responseTime}</span>
+                  <span className="text-fg-subtle">Response time:</span>
+                  <span className="text-fg-base">{timingData.responseTime}</span>
                 </div>
               </div>
               </TooltipContent>
@@ -250,10 +250,10 @@ export default function ThinkingState({
           >
             {/* Vertical line from chevron */}
             <div 
-              className="absolute left-[7px] top-0 bottom-0 w-[1px] bg-neutral-400/20"
+              className="absolute left-[7px] top-0 bottom-0 w-[1px] bg-fg-disabled/20"
               style={{ marginBottom: '-1px' }}
             />
-            <div className="mt-1 pl-6 text-[13px] leading-5 text-neutral-600 space-y-2">
+            <div className="mt-1 pl-6 text-[13px] leading-5 text-fg-subtle space-y-2">
               <AnimatePresence mode="wait">
                 {summary && (
                   <motion.p

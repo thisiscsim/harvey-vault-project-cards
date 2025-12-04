@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { AnimatedBackground } from "../../../components/motion-primitives/animated-background";
 import FileManagementDialog from "@/components/file-management-dialog"
 import Image from "next/image";
+import { SvgIcon } from "@/components/svg-icon";
 import { workflows as allWorkflows } from "@/lib/workflows";
 
 export default function AssistantHomePage() {
@@ -204,7 +205,7 @@ export default function AssistantHomePage() {
       
       {/* Main Content */}
       <SidebarInset className="flex-1 overflow-hidden">
-        <div className="h-screen overflow-y-auto bg-white rounded-[12px]" id="main-content">
+        <div className="h-screen overflow-y-auto bg-bg-base" id="main-content">
           <div 
             className="flex flex-col"
             style={{
@@ -223,41 +224,40 @@ export default function AssistantHomePage() {
               <div className="mx-auto" style={{ maxWidth: '732px' }}>
                 {/* Harvey Logo/Title */}
                 <div className="text-center mb-5">
-                  <Image 
+                  <SvgIcon 
                     src="/Harvey_Logo.svg" 
                     alt="Harvey" 
                     width={100}
                     height={32}
-                    className="mx-auto"
-                    style={{ height: '32px' }}
+                    className="mx-auto text-fg-base"
                   />
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 justify-center mb-5">
-                  <button className="py-1 pl-1 pr-3 bg-white border border-neutral-200 rounded-md hover:border-neutral-300 transition-colors flex items-center gap-2">
-                    <div className="p-1.5 bg-neutral-100 rounded-sm">
+                  <button className="py-1 pl-1 pr-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2">
+                    <div className="p-1.5 bg-bg-subtle rounded-sm">
                       <FileText size={16} style={{ color: '#3B7EA1' }} />
                     </div>
-                    <p className="text-neutral-900 text-sm font-medium">Create draft document</p>
+                    <p className="text-fg-base text-sm font-medium">Create draft document</p>
                   </button>
                   
                   <button 
                     onClick={() => router.push('/review-grid')}
-                    className="py-1 pl-1 pr-3 bg-white border border-neutral-200 rounded-md hover:border-neutral-300 transition-colors flex items-center gap-2"
+                    className="py-1 pl-1 pr-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2"
                   >
-                    <div className="p-1.5 bg-neutral-100 rounded-sm">
+                    <div className="p-1.5 bg-bg-subtle rounded-sm">
                       <Table2 size={16} style={{ color: '#3B7EA1' }} />
                     </div>
-                    <span className="text-neutral-900 text-sm font-medium">Create review grid</span>
+                    <span className="text-fg-base text-sm font-medium">Create review grid</span>
                   </button>
                 </div>
 
                 {/* Chat Input - Modern composer design */}
-                <div className="px-4 py-3 transition-all duration-200 bg-bg-subtle border border-neutral-200 focus-within:border-neutral-300 flex flex-col" style={{ borderRadius: '12px' }}>
+                <div className="px-4 py-3 transition-all duration-200 bg-bg-subtle border border-border-base focus-within:border-border-strong flex flex-col" style={{ borderRadius: '12px' }}>
                   {/* Matter chip at top */}
                   <div className="mb-3">
-                    <button className="px-2 py-1 text-neutral-700 border border-neutral-300 rounded-md hover:border-neutral-400 transition-colors" style={{ fontSize: '12px' }}>
+                    <button className="px-2 py-1 text-fg-subtle border border-border-strong rounded-md hover:border-border-interactive transition-colors" style={{ fontSize: '12px' }}>
                       Matter
                     </button>
                   </div>
@@ -278,7 +278,7 @@ export default function AssistantHomePage() {
                       }
                     }}
                     placeholder="Ask Harvey. Use @ for sources and attached files."
-                    className="w-full bg-transparent focus:outline-none text-neutral-900 placeholder-fg-muted resize-none overflow-hidden"
+                    className="w-full bg-transparent focus:outline-none text-fg-base placeholder-fg-muted resize-none overflow-hidden"
                     style={{ 
                       fontSize: '16px', 
                       lineHeight: '24px',
@@ -293,13 +293,13 @@ export default function AssistantHomePage() {
                     {/* Left Controls - Icon buttons */}
                     <div className="flex items-center gap-1">
                       <button 
-                        className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-neutral-700 border border-neutral-300 rounded-lg hover:border-neutral-400 transition-colors"
+                        className="w-9 h-9 flex items-center justify-center text-fg-muted hover:text-fg-subtle border border-border-strong rounded-lg hover:border-border-interactive transition-colors"
                       >
                         <Scale size={18} />
                       </button>
                       <button 
                         onClick={() => setIsFileManagementOpen(true)}
-                        className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-neutral-700 border border-neutral-300 rounded-lg hover:border-neutral-400 transition-colors"
+                        className="w-9 h-9 flex items-center justify-center text-fg-muted hover:text-fg-subtle border border-border-strong rounded-lg hover:border-border-interactive transition-colors"
                       >
                         <Paperclip size={18} />
                       </button>
@@ -309,13 +309,13 @@ export default function AssistantHomePage() {
                     <div className="flex items-center gap-2">
                       {/* Ghost icon buttons container */}
                       <div className="flex items-center">
-                        <button className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200 rounded-lg transition-colors">
+                        <button className="w-9 h-9 flex items-center justify-center text-fg-muted hover:text-fg-subtle hover:bg-bg-subtle-pressed rounded-lg transition-colors">
                           <Mic size={18} />
                         </button>
-                        <button className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200 rounded-lg transition-colors">
+                        <button className="w-9 h-9 flex items-center justify-center text-fg-muted hover:text-fg-subtle hover:bg-bg-subtle-pressed rounded-lg transition-colors">
                           <SlidersHorizontal size={18} />
                         </button>
-                        <button className="w-9 h-9 flex items-center justify-center text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200 rounded-lg transition-colors">
+                        <button className="w-9 h-9 flex items-center justify-center text-fg-muted hover:text-fg-subtle hover:bg-bg-subtle-pressed rounded-lg transition-colors">
                           <ListPlus size={18} />
                         </button>
                       </div>
@@ -324,7 +324,7 @@ export default function AssistantHomePage() {
                       {isLoading ? (
                         <button
                           disabled
-                          className="h-9 flex items-center justify-center bg-neutral-900 text-white rounded-lg transition-all cursor-not-allowed"
+                          className="h-9 flex items-center justify-center bg-bg-interactive text-fg-on-color rounded-lg transition-all cursor-not-allowed"
                           style={{ width: '44px' }}
                         >
                           <Spinner size="sm" />
@@ -332,14 +332,14 @@ export default function AssistantHomePage() {
                       ) : inputValue.trim() ? (
                         <button
                           onClick={handleSendMessage}
-                          className="h-9 flex items-center justify-center bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-all"
+                          className="h-9 flex items-center justify-center bg-bg-interactive text-fg-on-color rounded-lg hover:opacity-90 transition-all"
                           style={{ width: '44px' }}
                         >
                           <CornerDownLeft size={18} />
                         </button>
                       ) : (
                         <button
-                          className="h-9 flex items-center justify-center bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-all"
+                          className="h-9 flex items-center justify-center bg-bg-subtle-pressed text-fg-subtle rounded-lg hover:bg-bg-component transition-all"
                           style={{ width: '44px' }}
                         >
                           <AudioLines size={20} />
@@ -352,36 +352,36 @@ export default function AssistantHomePage() {
               {/* Action Cards Section - Below Chatbox */}
               <div className="mt-3">
                 <div className="flex gap-3 justify-center flex-wrap mx-auto" style={{ maxWidth: '740px' }}>
-                  <button className="py-1 pl-1 pr-3 bg-white border border-neutral-200 rounded-md hover:border-neutral-300 transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
-                    <div className="p-1.5 bg-neutral-100 rounded-sm flex-shrink-0">
+                  <button className="py-1 pl-1 pr-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
+                    <div className="p-1.5 bg-bg-subtle rounded-sm flex-shrink-0">
                       <Image src="/lexis.svg" alt="" width={16} height={16} style={{ width: '16px', height: '16px' }} />
                     </div>
-                    <span className="text-neutral-900 text-sm font-medium truncate">LexisNexis</span>
-                    <Plus size={16} className="text-neutral-600 flex-shrink-0" />
+                    <span className="text-fg-base text-sm font-medium truncate">LexisNexis</span>
+                    <Plus size={16} className="text-fg-subtle flex-shrink-0" />
                   </button>
                   
-                  <button className="py-1 pl-1 pr-3 bg-white border border-neutral-200 rounded-md hover:border-neutral-300 transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
-                    <div className="p-1.5 bg-neutral-100 rounded-sm flex-shrink-0">
+                  <button className="py-1 pl-1 pr-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
+                    <div className="p-1.5 bg-bg-subtle rounded-sm flex-shrink-0">
                       <Image src="/EDGAR.svg" alt="" width={16} height={16} style={{ width: '16px', height: '16px' }} />
                     </div>
-                    <span className="text-neutral-900 text-sm font-medium truncate">EDGAR</span>
-                    <Plus size={16} className="text-neutral-600 flex-shrink-0" />
+                    <span className="text-fg-base text-sm font-medium truncate">EDGAR</span>
+                    <Plus size={16} className="text-fg-subtle flex-shrink-0" />
                   </button>
                   
-                  <button className="py-1 pl-1 pr-3 bg-white border border-neutral-200 rounded-md hover:border-neutral-300 transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
-                    <div className="p-1.5 bg-neutral-100 rounded-sm flex-shrink-0">
-                      <Image src="/folderIcon.svg" alt="" width={16} height={16} style={{ width: '16px', height: '16px' }} className="text-neutral-600" />
+                  <button className="py-1 pl-1 pr-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
+                    <div className="p-1.5 bg-bg-subtle rounded-sm flex-shrink-0">
+                      <Image src="/folderIcon.svg" alt="" width={16} height={16} style={{ width: '16px', height: '16px' }} className="text-fg-subtle" />
                     </div>
-                    <span className="text-neutral-900 text-sm font-medium truncate">Amend v Delta IP Litigation</span>
-                    <Plus size={16} className="text-neutral-600 flex-shrink-0" />
+                    <span className="text-fg-base text-sm font-medium truncate">Amend v Delta IP Litigation</span>
+                    <Plus size={16} className="text-fg-subtle flex-shrink-0" />
                   </button>
                   
-                  <button className="py-1 pl-1 pr-3 bg-white border border-neutral-200 rounded-md hover:border-neutral-300 transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
-                    <div className="p-1.5 bg-neutral-100 rounded-sm flex-shrink-0">
-                      <Image src="/folderIcon.svg" alt="" width={16} height={16} style={{ width: '16px', height: '16px' }} className="text-neutral-600" />
+                  <button className="py-1 pl-1 pr-3 bg-bg-base border border-border-base rounded-md hover:border-border-strong transition-colors flex items-center gap-2" style={{ maxWidth: '150px' }}>
+                    <div className="p-1.5 bg-bg-subtle rounded-sm flex-shrink-0">
+                      <Image src="/folderIcon.svg" alt="" width={16} height={16} style={{ width: '16px', height: '16px' }} className="text-fg-subtle" />
                     </div>
-                    <span className="text-neutral-900 text-sm font-medium truncate">Regulatory Compliance Audit</span>
-                    <Plus size={16} className="text-neutral-600 flex-shrink-0" />
+                    <span className="text-fg-base text-sm font-medium truncate">Regulatory Compliance Audit</span>
+                    <Plus size={16} className="text-fg-subtle flex-shrink-0" />
                   </button>
                 </div>
               </div>
@@ -392,7 +392,7 @@ export default function AssistantHomePage() {
             
             {/* Workflow Cards Section */}
             <div 
-              className="w-full bg-white"
+              className="w-full bg-bg-base"
               ref={workflowContainerRef}
             >
               <div className="xl:max-w-[1500px] xl:mx-auto px-10 pt-2 pb-12 relative">
@@ -402,33 +402,33 @@ export default function AssistantHomePage() {
                       <AnimatedBackground 
                         defaultValue={activeWorkflowTab}
                         onValueChange={(value) => value && setActiveWorkflowTab(value)}
-                        className="bg-neutral-100 rounded-md"
+                        className="bg-bg-subtle rounded-md"
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       >
                         <button
                           data-id="recommended"
-                          className="relative px-2 py-1.5 font-medium transition-colors text-neutral-600 hover:text-neutral-900 data-[checked=true]:text-neutral-900"
+                          className="relative px-2 py-1.5 font-medium transition-colors text-fg-subtle hover:text-fg-base data-[checked=true]:text-fg-base"
                           style={{ fontSize: '14px', lineHeight: '20px' }}
                         >
                           Recommended
                         </button>
                         <button
                           data-id="draft"
-                          className="relative px-2 py-1.5 font-medium transition-colors text-neutral-600 hover:text-neutral-900 data-[checked=true]:text-neutral-900"
+                          className="relative px-2 py-1.5 font-medium transition-colors text-fg-subtle hover:text-fg-base data-[checked=true]:text-fg-base"
                           style={{ fontSize: '14px', lineHeight: '20px' }}
                         >
                           Draft
                         </button>
                         <button
                           data-id="output"
-                          className="relative px-2 py-1.5 font-medium transition-colors text-neutral-600 hover:text-neutral-900 data-[checked=true]:text-neutral-900"
+                          className="relative px-2 py-1.5 font-medium transition-colors text-fg-subtle hover:text-fg-base data-[checked=true]:text-fg-base"
                           style={{ fontSize: '14px', lineHeight: '20px' }}
                         >
                           Output
                         </button>
                         <button
                           data-id="review"
-                          className="relative px-2 py-1.5 font-medium transition-colors text-neutral-600 hover:text-neutral-900 data-[checked=true]:text-neutral-900"
+                          className="relative px-2 py-1.5 font-medium transition-colors text-fg-subtle hover:text-fg-base data-[checked=true]:text-fg-base"
                           style={{ fontSize: '14px', lineHeight: '20px' }}
                         >
                           Review
@@ -438,14 +438,14 @@ export default function AssistantHomePage() {
                     
                     {/* Search Input */}
                     <div className="relative" style={{ width: '300px' }}>
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-fg-disabled" />
                       <Input
                         type="text"
                         placeholder="Search workflows"
                         value={workflowSearchQuery}
                         onChange={(e) => setWorkflowSearchQuery(e.target.value)}
-                        className="pl-9 pr-3 border-neutral-200 focus:ring-1 focus:ring-neutral-300 font-normal text-neutral-900 placeholder:text-neutral-500"
-                        style={{ height: '32px', fontSize: '14px', lineHeight: '20px', color: '#171717' }}
+                        className="pl-9 pr-3 border-border-base focus:ring-1 focus:ring-border-strong font-normal text-fg-base placeholder:text-fg-muted"
+                        style={{ height: '32px', fontSize: '14px', lineHeight: '20px' }}
                       />
                     </div>
                   </div>
@@ -459,16 +459,16 @@ export default function AssistantHomePage() {
                   return (
                     <button
                       key={workflow.id}
-                      className="p-4 bg-neutral-100 rounded-lg hover:bg-neutral-200 transition-all text-left overflow-hidden"
+                      className="p-4 bg-bg-subtle rounded-lg hover:bg-bg-subtle-hover transition-all text-left overflow-hidden"
                       style={{
                         transitionDuration: '500ms',
                         transitionTimingFunction: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
                       }}
                       ref={colIndex === 0 ? firstCardRef : undefined}
                     >
-                      <h3 className="text-sm font-medium text-neutral-900 mb-1 truncate">{workflow.title}</h3>
-                      <p className="text-xs text-neutral-500 mb-8 truncate">{workflow.description}</p>
-                      <div className="flex items-center gap-1 text-neutral-500">
+                      <h3 className="text-sm font-medium text-fg-base mb-1 truncate">{workflow.title}</h3>
+                      <p className="text-xs text-fg-muted mb-8 truncate">{workflow.description}</p>
+                      <div className="flex items-center gap-1 text-fg-muted">
                         <IconComponent size={12} />
                         <span className="text-xs">{workflow.type}</span>
                         <span className="text-xs">•</span>
@@ -490,7 +490,7 @@ export default function AssistantHomePage() {
                 transition={{ duration: 0.22, delay: hintDelay, ease: [0.2, 0, 0.2, 1] }}
                 aria-hidden
               >
-                <div className="flex items-center gap-1 text-neutral-500 text-xs">
+                <div className="flex items-center gap-1 text-fg-muted text-xs">
                   <span>Scroll for more workflows</span>
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="animate-bounce">
                     <path d="M6 2v8m0 0L3 7m3 3l3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -522,7 +522,7 @@ export default function AssistantHomePage() {
                 return (
                   <button
                     key={workflow.id}
-                    className="p-4 bg-neutral-100 rounded-lg hover:bg-neutral-200 transition-all text-left overflow-hidden"
+                    className="p-4 bg-bg-subtle rounded-lg hover:bg-bg-subtle-hover transition-all text-left overflow-hidden"
                     style={{
                       opacity,
                       transform,
@@ -531,9 +531,9 @@ export default function AssistantHomePage() {
                       transitionTimingFunction: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
                     }}
                   >
-                    <h3 className="text-sm font-medium text-neutral-900 mb-1 truncate">{workflow.title}</h3>
-                    <p className="text-xs text-neutral-500 mb-8 truncate">{workflow.description}</p>
-                    <div className="flex items-center gap-1 text-neutral-500">
+                    <h3 className="text-sm font-medium text-fg-base mb-1 truncate">{workflow.title}</h3>
+                    <p className="text-xs text-fg-muted mb-8 truncate">{workflow.description}</p>
+                    <div className="flex items-center gap-1 text-fg-muted">
                       <IconComponent size={12} />
                       <span className="text-xs">{workflow.type}</span>
                       <span className="text-xs">•</span>
@@ -546,7 +546,7 @@ export default function AssistantHomePage() {
 
             {filteredWorkflows.length === 0 && (
               <div className="text-center py-8">
-                <p className="text-neutral-500">No workflows found matching your search.</p>
+                <p className="text-fg-muted">No workflows found matching your search.</p>
               </div>
             )}
           </div>

@@ -105,7 +105,7 @@ const columns: ColumnDef<iManageFile>[] = [
           />
         )}
         <div className="min-w-0">
-          <p className="text-sm text-neutral-900 truncate">{row.original.name}</p>
+          <p className="text-sm text-fg-base truncate">{row.original.name}</p>
         </div>
       </div>
     ),
@@ -114,7 +114,7 @@ const columns: ColumnDef<iManageFile>[] = [
     accessorKey: 'size',
     header: 'Size',
     cell: ({ getValue }) => (
-      <span className="text-sm text-neutral-600">{(getValue() as string) || '-'}</span>
+      <span className="text-sm text-fg-subtle">{(getValue() as string) || '-'}</span>
     ),
   },
 ];
@@ -218,7 +218,7 @@ export default function IManageFilePickerDialog({
         <AnimatePresence>
           {isLoading && (
             <motion.div 
-              className="absolute inset-0 bg-white z-50 flex items-center justify-center"
+              className="absolute inset-0 bg-bg-base z-50 flex items-center justify-center"
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
@@ -276,7 +276,7 @@ export default function IManageFilePickerDialog({
                       transition={{ type: "spring", stiffness: 360, damping: 26 }}
                       style={{ willChange: "transform, opacity" }}
                     >
-                      <div className="w-[64px] h-1 bg-neutral-200 rounded-full overflow-hidden relative">
+                      <div className="w-[64px] h-1 bg-bg-subtle-pressed rounded-full overflow-hidden relative">
                         <motion.div
                           className="absolute left-0 top-0 h-full bg-black rounded-full"
                           initial={{ x: 0, width: PROGRESS_SEGMENT_MIN }}
@@ -300,7 +300,7 @@ export default function IManageFilePickerDialog({
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.9, duration: 0.3 }}
                 >
-                  <p className="text-sm text-neutral-500">Connecting to iManage...</p>
+                  <p className="text-sm text-fg-muted">Connecting to iManage...</p>
                 </motion.div>
               </div>
             </motion.div>
@@ -308,16 +308,16 @@ export default function IManageFilePickerDialog({
         </AnimatePresence>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-2 py-2 border-b border-neutral-200">
+        <div className="flex items-center justify-between px-2 py-2 border-b border-border-base">
           <div className="flex items-center gap-2">
-            <div className="h-[38px] w-[38px] rounded-md bg-neutral-100 flex items-center justify-center">
+            <div className="h-[38px] w-[38px] rounded-md bg-bg-subtle flex items-center justify-center">
               <Image src="/imanage.svg" alt="iManage" width={24} height={24} />
             </div>
-            <span className="text-md font-medium text-neutral-900">Select files from iManage</span>
+            <span className="text-md font-medium text-fg-base">Select files from iManage</span>
           </div>
           <button
             onClick={onClose}
-            className="h-8 w-8 flex items-center justify-center rounded hover:bg-neutral-100 transition-colors text-neutral-500 hover:text-neutral-700 self-start"
+            className="h-8 w-8 flex items-center justify-center rounded hover:bg-bg-subtle transition-colors text-fg-muted hover:text-fg-subtle self-start"
           >
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
@@ -325,36 +325,36 @@ export default function IManageFilePickerDialog({
         </div>
 
         {/* Search Bar */}
-        <div className="px-4 py-3 border-b border-neutral-200">
+        <div className="px-4 py-3 border-b border-border-base">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-fg-muted" />
             <Input
               type="text"
               placeholder="Search files and folders..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 border-neutral-200 focus:ring-1 focus:ring-neutral-300 font-normal text-neutral-900 placeholder:text-neutral-500"
+              className="pl-9 pr-3 border-border-base focus:ring-1 focus:ring-border-strong font-normal text-fg-base placeholder:text-fg-muted"
               style={{ height: '36px', fontSize: '14px' }}
             />
           </div>
           
           {/* Filter Chips */}
           <div className="flex gap-2 mt-3">
-            <button className="flex items-center gap-1.5 px-2 py-1 border border-dashed border-neutral-300 hover:bg-neutral-50 rounded-md transition-colors">
-              <Plus className="h-3.5 w-3.5 text-neutral-500" />
-              <span className="text-xs text-neutral-700">Document type</span>
+            <button className="flex items-center gap-1.5 px-2 py-1 border border-dashed border-border-strong hover:bg-bg-subtle rounded-md transition-colors">
+              <Plus className="h-3.5 w-3.5 text-fg-muted" />
+              <span className="text-xs text-fg-subtle">Document type</span>
             </button>
-            <button className="flex items-center gap-1.5 px-2 py-1 border border-dashed border-neutral-300 hover:bg-neutral-50 rounded-md transition-colors">
-              <Plus className="h-3.5 w-3.5 text-neutral-500" />
-              <span className="text-xs text-neutral-700">File type</span>
+            <button className="flex items-center gap-1.5 px-2 py-1 border border-dashed border-border-strong hover:bg-bg-subtle rounded-md transition-colors">
+              <Plus className="h-3.5 w-3.5 text-fg-muted" />
+              <span className="text-xs text-fg-subtle">File type</span>
             </button>
-            <button className="flex items-center gap-1.5 px-2 py-1 border border-dashed border-neutral-300 hover:bg-neutral-50 rounded-md transition-colors">
-              <History className="h-3.5 w-3.5 text-neutral-500" />
-              <span className="text-xs text-neutral-700">Recent</span>
+            <button className="flex items-center gap-1.5 px-2 py-1 border border-dashed border-border-strong hover:bg-bg-subtle rounded-md transition-colors">
+              <History className="h-3.5 w-3.5 text-fg-muted" />
+              <span className="text-xs text-fg-subtle">Recent</span>
             </button>
-            <button className="flex items-center gap-1.5 px-2 py-1 border border-dashed border-neutral-300 hover:bg-neutral-50 rounded-md transition-colors">
-              <Star className="h-3.5 w-3.5 text-neutral-500" />
-              <span className="text-xs text-neutral-700">Favorites</span>
+            <button className="flex items-center gap-1.5 px-2 py-1 border border-dashed border-border-strong hover:bg-bg-subtle rounded-md transition-colors">
+              <Star className="h-3.5 w-3.5 text-fg-muted" />
+              <span className="text-xs text-fg-subtle">Favorites</span>
             </button>
           </div>
         </div>
@@ -370,7 +370,7 @@ export default function IManageFilePickerDialog({
                       <th
                         key={header.id}
                         className={cn(
-                          "py-2 text-left text-xs font-medium text-neutral-600 tracking-wider",
+                          "py-2 text-left text-xs font-medium text-fg-subtle tracking-wider",
                           header.id === 'select' ? "pl-4 pr-0.5" : 
                           header.id === 'name' ? "pl-1 pr-4" : "px-4"
                         )}
@@ -387,11 +387,11 @@ export default function IManageFilePickerDialog({
                   </tr>
                 ))}
               </thead>
-              <tbody className="bg-white divide-y divide-neutral-200">
+              <tbody className="bg-bg-base divide-y divide-border-base">
                 {table.getRowModel().rows.length === 0 ? (
                   <tr>
                     <td colSpan={columns.length} className="text-center py-12">
-                      <p className="text-sm text-neutral-500">No files found</p>
+                      <p className="text-sm text-fg-muted">No files found</p>
                     </td>
                   </tr>
                 ) : (
@@ -399,8 +399,8 @@ export default function IManageFilePickerDialog({
                     <tr
                       key={row.id}
                       className={cn(
-                        "hover:bg-neutral-50 transition-colors cursor-pointer",
-                        row.getIsSelected() && "bg-neutral-100 hover:bg-neutral-100"
+                        "hover:bg-bg-subtle transition-colors cursor-pointer",
+                        row.getIsSelected() && "bg-bg-subtle hover:bg-bg-subtle"
                       )}
                       onClick={() => {
                         row.toggleSelected();
@@ -410,7 +410,7 @@ export default function IManageFilePickerDialog({
                         <td
                           key={cell.id}
                           className={cn(
-                            "py-3 text-sm text-neutral-900",
+                            "py-3 text-sm text-fg-base",
                             cell.column.id === 'select' ? "pl-4 pr-0.5" : 
                             cell.column.id === 'name' ? "pl-1 pr-4" : "px-4"
                           )}
@@ -438,8 +438,8 @@ export default function IManageFilePickerDialog({
 
         {/* Footer */}
         {!isLoading && (
-          <div className="flex items-center justify-between px-3 py-3 border-t border-neutral-200">
-            <p className="text-sm text-neutral-600">
+          <div className="flex items-center justify-between px-3 py-3 border-t border-border-base">
+            <p className="text-sm text-fg-subtle">
               {table.getSelectedRowModel().rows.length} {table.getSelectedRowModel().rows.length === 1 ? 'file' : 'files'} selected
             </p>
             <div className="flex gap-2">
@@ -464,7 +464,7 @@ export default function IManageFilePickerDialog({
         <DialogPortal>
           <DialogOverlay className={overlayClassName} />
           <DialogPrimitive.Content
-            className="fixed left-[50%] top-[50%] z-50 w-[800px] max-w-[800px] h-[600px] translate-x-[-50%] translate-y-[-50%] border border-neutral-200 bg-white duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg p-0 gap-0 overflow-hidden flex flex-col"
+            className="fixed left-[50%] top-[50%] z-50 w-[800px] max-w-[800px] h-[600px] translate-x-[-50%] translate-y-[-50%] border border-border-base bg-bg-base duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg p-0 gap-0 overflow-hidden flex flex-col"
           >
             {dialogContent}
           </DialogPrimitive.Content>

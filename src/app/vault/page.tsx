@@ -97,20 +97,20 @@ export default function VaultPage() {
       <AppSidebar />
       
       {/* Main Content */}
-              <SidebarInset className="overflow-hidden">
-          <div className="h-screen flex flex-col bg-white rounded-[12px]">
+              <SidebarInset>
+          <div className="h-screen flex flex-col bg-bg-base">
             <div className="w-full xl:max-w-[1500px] xl:mx-auto flex flex-col h-full px-10">
               {/* Header */}
             <div className="pb-0" style={{ paddingTop: '40px' }}>
-              <h1 className="text-2xl font-semibold text-neutral-900">Vault</h1>
-              <p className="text-sm text-neutral-500 mt-1 mb-6">Upload, store, and analyze thousands of documents</p>
+              <h1 className="text-2xl font-semibold text-fg-base">Vault</h1>
+              <p className="text-sm text-fg-muted mt-1 mb-6">Upload, store, and analyze thousands of documents</p>
               
               {/* Action Cards */}
               <div className="grid grid-cols-3 gap-4 mb-8">
                 {/* Create Project Card */}
-                <div className="border border-neutral-200 rounded-lg p-1 hover:border-neutral-300 transition-colors cursor-pointer" style={{ height: '100px' }}>
+                <div className="border border-border-base rounded-lg p-1 hover:border-border-strong transition-colors cursor-pointer" style={{ height: '100px' }}>
                                       <div className="flex items-center justify-center gap-4 h-full">
-                      <div className="p-3 bg-neutral-100 rounded-lg w-[120px] h-full flex items-center justify-center">
+                      <div className="p-3 bg-bg-subtle rounded-lg w-[120px] h-full flex items-center justify-center">
                         <img 
                           src="/vault_project_illustration.svg" 
                           alt="Create project" 
@@ -118,16 +118,16 @@ export default function VaultPage() {
                         />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-neutral-900">Create project</p>
-                        <p className="text-sm text-neutral-500">Upload a new collection of files or folders.</p>
+                        <p className="text-sm font-medium text-fg-base">Create project</p>
+                        <p className="text-sm text-fg-muted">Upload a new collection of files or folders.</p>
                       </div>
                     </div>
                   </div>
                   
                   {/* Create Knowledge Base Card */}
-                  <div className="border border-neutral-200 rounded-lg p-1 hover:border-neutral-300 transition-colors cursor-pointer" style={{ height: '100px' }}>
+                  <div className="border border-border-base rounded-lg p-1 hover:border-border-strong transition-colors cursor-pointer" style={{ height: '100px' }}>
                     <div className="flex items-center justify-center gap-4 h-full">
-                      <div className="p-3 bg-neutral-100 rounded-lg w-[120px] h-full flex items-center justify-center">
+                      <div className="p-3 bg-bg-subtle rounded-lg w-[120px] h-full flex items-center justify-center">
                         <img 
                           src="/knowledge_base_illustration.svg" 
                           alt="Create knowledge base" 
@@ -135,8 +135,8 @@ export default function VaultPage() {
                         />
                       </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-neutral-900">Create knowledge base</p>
-                      <p className="text-sm text-neutral-500">Distribute a repository of files to your organization.</p>
+                      <p className="text-sm font-medium text-fg-base">Create knowledge base</p>
+                      <p className="text-sm text-fg-muted">Distribute a repository of files to your organization.</p>
                     </div>
                   </div>
                 </div>
@@ -150,26 +150,26 @@ export default function VaultPage() {
                                   <AnimatedBackground 
                   defaultValue={activeTab}
                   onValueChange={(value) => value && setActiveTab(value)}
-                  className="bg-neutral-100 rounded-md"
+                  className="bg-bg-subtle rounded-md"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 >
                     <button
                       data-id="all"
-                      className="relative px-2 py-1.5 font-medium transition-colors text-neutral-600 hover:text-neutral-900 data-[checked=true]:text-neutral-900"
+                      className="relative px-2 py-1.5 font-medium transition-colors text-fg-subtle hover:text-fg-base data-[checked=true]:text-fg-base"
                       style={{ fontSize: '14px', lineHeight: '20px' }}
                     >
                       All projects
                     </button>
                     <button
                       data-id="your"
-                      className="relative px-2 py-1.5 font-medium transition-colors text-neutral-600 hover:text-neutral-900 data-[checked=true]:text-neutral-900"
+                      className="relative px-2 py-1.5 font-medium transition-colors text-fg-subtle hover:text-fg-base data-[checked=true]:text-fg-base"
                       style={{ fontSize: '14px', lineHeight: '20px' }}
                     >
                       Your projects
                     </button>
                     <button
                       data-id="shared"
-                      className="relative px-2 py-1.5 font-medium transition-colors text-neutral-600 hover:text-neutral-900 data-[checked=true]:text-neutral-900"
+                      className="relative px-2 py-1.5 font-medium transition-colors text-fg-subtle hover:text-fg-base data-[checked=true]:text-fg-base"
                       style={{ fontSize: '14px', lineHeight: '20px' }}
                     >
                       Shared with you
@@ -179,13 +179,13 @@ export default function VaultPage() {
                 
                                   {/* Search Input */}
                   <div className="relative" style={{ width: '300px', marginBottom: '12px' }}>
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-fg-muted" />
                     <Input
                       type="text"
                       placeholder="Search"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 pr-3 border-neutral-200 focus:ring-1 focus:ring-neutral-300 font-normal text-neutral-900 placeholder:text-neutral-500"
+                      className="pl-9 pr-3 border-border-base focus:ring-1 focus:ring-border-strong font-normal text-fg-base placeholder:text-fg-muted"
                       style={{ height: '32px', fontSize: '14px', lineHeight: '20px', color: '#171717' }}
                     />
                   </div>
@@ -202,7 +202,7 @@ export default function VaultPage() {
                       className="cursor-pointer"
                     >
                   {/* Icon container */}
-                  <div className="w-full bg-neutral-100 rounded-lg flex items-center justify-center mb-2.5" style={{ height: '162px' }}>
+                  <div className="w-full bg-bg-subtle rounded-lg flex items-center justify-center mb-2.5" style={{ height: '162px' }}>
                     <img 
                       src={
                         project.name === "Nikhil's Personal Project" ? "/privateFolderIcon.svg" :
@@ -218,13 +218,13 @@ export default function VaultPage() {
                   {/* Title and menu */}
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-neutral-900 leading-tight m-0">{project.name}</p>
+                      <p className="text-sm font-medium text-fg-base leading-tight m-0">{project.name}</p>
                       <div className="flex items-center gap-1 leading-tight">
-                        <p className="text-xs text-neutral-500 m-0">{project.fileCount}</p>
+                        <p className="text-xs text-fg-muted m-0">{project.fileCount}</p>
                         {project.status && (
                           <>
-                            <span className="text-neutral-300">•</span>
-                            <p className="text-xs text-neutral-500 m-0">{project.status}</p>
+                            <span className="text-fg-disabled">•</span>
+                            <p className="text-xs text-fg-muted m-0">{project.status}</p>
                           </>
                         )}
                       </div>

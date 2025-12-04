@@ -96,8 +96,8 @@ export default function ReviewGridPage() {
       <AppSidebar />
       
       {/* Main Content - Full width review grid */}
-      <SidebarInset className="flex-1 overflow-hidden">
-        <div className="h-screen flex bg-white rounded-[12px]">
+      <SidebarInset className="flex-1">
+        <div className="h-screen flex">
           <ReviewArtifactPanel
             selectedArtifact={selectedArtifact}
             isEditingArtifactTitle={isEditingArtifactTitle}

@@ -3,15 +3,16 @@ import { cn } from "@/lib/utils"
 
 const buttonVariants = {
   variant: {
-    default: "bg-neutral-900 text-white hover:bg-neutral-800",
-    secondary: "border border-neutral-200 bg-white hover:bg-neutral-100 text-neutral-700",
-    ghost: "hover:bg-neutral-100 text-neutral-700",
-    outline: "border border-neutral-200 bg-white hover:bg-neutral-100 text-neutral-700",
+    default: "bg-bg-interactive text-white hover:bg-bg-interactive",
+    secondary: "border border-border-base bg-bg-base hover:bg-bg-subtle text-fg-subtle",
+    ghost: "hover:bg-bg-subtle text-fg-subtle",
+    outline: "border border-border-base bg-bg-base hover:bg-bg-subtle text-fg-subtle",
   },
   size: {
-    default: "px-3 py-1.5 text-sm",
-    small: "px-1.5 py-1 text-sm",
-    icon: "p-2",
+    default: "h-8 px-3 text-sm",
+    small: "h-6 px-2 text-xs",
+    icon: "h-8 w-8",
+    iconSmall: "h-6 w-6",
   },
 }
 
@@ -26,7 +27,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          "inline-flex items-center justify-center rounded-md font-normal transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center rounded-md font-normal transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-interactive disabled:pointer-events-none disabled:opacity-50",
           buttonVariants.variant[variant],
           buttonVariants.size[size],
           className
@@ -54,11 +55,11 @@ const SmallButton = React.forwardRef<HTMLButtonElement, SmallButtonProps>(
       <Button
         ref={ref}
         variant={variant}
+        size="small"
         className={cn(
-          "gap-1 px-1.5 py-1",
+          "gap-1",
           className
         )}
-        style={{ fontSize: '14px' }}
         {...props}
       >
         {icon}

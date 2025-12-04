@@ -82,7 +82,7 @@ export default function ManageGroupedFilesPopover({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.15 }}
-          className="fixed z-50 bg-white rounded-lg shadow-xl border border-neutral-200"
+          className="fixed z-50 bg-bg-base rounded-lg shadow-xl border border-border-base"
           style={{
             top: rect.top,
             left: rect.right + 8,
@@ -91,11 +91,11 @@ export default function ManageGroupedFilesPopover({
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200">
-            <h3 className="text-sm font-medium text-neutral-900">Grouped files</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border-base">
+            <h3 className="text-sm font-medium text-fg-base">Grouped files</h3>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-neutral-100 rounded transition-colors text-neutral-500"
+              className="p-1 hover:bg-bg-subtle rounded transition-colors text-fg-muted"
             >
               <X size={16} />
             </button>
@@ -107,7 +107,7 @@ export default function ManageGroupedFilesPopover({
             {groupedFiles.map((file, index) => (
               <div 
                 key={file.id}
-                className="flex items-center gap-2 px-4 py-2 hover:bg-neutral-50 transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 hover:bg-bg-subtle transition-colors cursor-pointer"
                 onMouseEnter={() => setHoveredFileIndex(index)}
                 onMouseLeave={() => setHoveredFileIndex(null)}
               >
@@ -119,7 +119,7 @@ export default function ManageGroupedFilesPopover({
                   height={16}
                   className="flex-shrink-0"
                 />
-                <span className="text-sm text-neutral-900 flex-1 truncate">{file.name}</span>
+                <span className="text-sm text-fg-base flex-1 truncate">{file.name}</span>
                 
                 {/* Delete button - always reserve space */}
                 <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
@@ -129,7 +129,7 @@ export default function ManageGroupedFilesPopover({
                         e.stopPropagation();
                         onRemoveFile?.(index);
                       }}
-                      className="p-1 hover:bg-neutral-200 rounded transition-colors text-neutral-600"
+                      className="p-1 hover:bg-bg-subtle-pressed rounded transition-colors text-fg-subtle"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -142,7 +142,7 @@ export default function ManageGroupedFilesPopover({
             <div className="px-4 pt-2 pb-2">
               <button
                 onClick={() => console.log('Add files to group')}
-                className="flex items-center gap-1.5 px-2 py-1.5 border border-neutral-200 rounded-md hover:bg-neutral-50 transition-colors text-neutral-700 text-sm font-normal w-full justify-center"
+                className="flex items-center gap-1.5 px-2 py-1.5 border border-border-base rounded-md hover:bg-bg-subtle transition-colors text-fg-subtle text-sm font-normal w-full justify-center"
               >
                 <Plus size={14} />
                 <span>Add files</span>

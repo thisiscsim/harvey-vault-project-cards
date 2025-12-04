@@ -70,7 +70,7 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
     <>
       <div className="flex items-center justify-between pl-5 pr-3 py-3">
         <DialogTitle asChild>
-          <h2 className="text-base font-medium text-neutral-900">Share thread</h2>
+          <h2 className="text-base font-medium text-fg-base">Share thread</h2>
         </DialogTitle>
         <DialogClose asChild>
           <Button
@@ -93,7 +93,7 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleInvite()}
-              className="flex-1 text-sm text-neutral-900"
+              className="flex-1 text-sm text-fg-base"
             />
             <Button 
               onClick={handleInvite}
@@ -102,7 +102,7 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
               Invite
             </Button>
           </div>
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-fg-muted">
             Only people you&apos;ve granted access will be able to access this project.
           </p>
         </div>
@@ -111,49 +111,49 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
         <div className="space-y-1">
           <button 
             onClick={() => setCurrentView("artifact")}
-            className="w-full flex items-center justify-between p-2 hover:bg-neutral-50 rounded-lg transition-colors group"
+            className="w-full flex items-center justify-between p-2 hover:bg-bg-subtle rounded-lg transition-colors group"
           >
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 flex items-center justify-center">
-                <svg className="h-4 w-4 text-neutral-700" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <svg className="h-4 w-4 text-fg-subtle" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                   <path d="M11 4.00001V3.00001H9.00001V4.00001H11ZM9.00001 20V21H11V20H9.00001ZM4.00001 9.00001H3.00001V11H4.00001V9.00001ZM20 11H21V9.00001H20V11ZM19 5.6V18.4H21V5.6H19ZM18.4 19H5.6V21H18.4V19ZM5.00001 18.4V5.6H3.00001V18.4H5.00001ZM5.6 5.00001H18.4V3.00001H5.6V5.00001ZM5.6 19C5.30347 19 5.14123 18.9992 5.02464 18.9897C4.91973 18.9811 4.9425 18.9707 5.00001 19L4.09203 20.782C4.36345 20.9203 4.63319 20.9644 4.86178 20.9831C5.0787 21.0008 5.33647 21 5.6 21V19ZM3.00001 18.4C3.00001 18.6635 2.99922 18.9213 3.01695 19.1382C3.03562 19.3668 3.0797 19.6366 3.218 19.908L5.00001 19C5.02931 19.0575 5.01888 19.0803 5.01031 18.9754C5.00079 18.8588 5.00001 18.6965 5.00001 18.4H3.00001ZM5.00001 19L3.218 19.908C3.40974 20.2843 3.7157 20.5903 4.09203 20.782L5.00001 19ZM19 18.4C19 18.6965 18.9992 18.8588 18.9897 18.9754C18.9811 19.0803 18.9707 19.0575 19 19L20.782 19.908C20.9203 19.6366 20.9644 19.3668 20.9831 19.1382C21.0008 18.9213 21 18.6635 21 18.4H19ZM18.4 21C18.6635 21 18.9213 21.0008 19.1382 20.9831C19.3668 20.9644 19.6366 20.9203 19.908 20.782L19 19C19.0575 18.9707 19.0803 18.9811 18.9754 18.9897C18.8588 18.9992 18.6965 19 18.4 19V21ZM19 19L19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908L19 19ZM21 5.6C21 5.33647 21.0008 5.0787 20.9831 4.86178C20.9644 4.63319 20.9203 4.36345 20.782 4.09203L19 5.00001C18.9707 4.9425 18.9811 4.91973 18.9897 5.02464C18.9992 5.14123 19 5.30347 19 5.6H21ZM18.4 5.00001C18.6965 5.00001 18.8588 5.00079 18.9754 5.01031C19.0803 5.01888 19.0575 5.02931 19 5.00001L19.908 3.218C19.6366 3.0797 19.3668 3.03562 19.1382 3.01695C18.9213 2.99922 18.6635 3.00001 18.4 3.00001V5.00001ZM20.782 4.09203C20.5903 3.7157 20.2843 3.40974 19.908 3.218L19 5.00001L20.782 4.09203ZM5.00001 5.6C5.00001 5.30347 5.00079 5.14123 5.01031 5.02464C5.01888 4.91973 5.02931 4.9425 5.00001 5.00001L3.218 4.09203C3.0797 4.36345 3.03562 4.63319 3.01695 4.86178C2.99922 5.0787 3.00001 5.33647 3.00001 5.6H5.00001ZM5.6 3.00001C5.33647 3.00001 5.0787 2.99922 4.86178 3.01695C4.63319 3.03562 4.36345 3.0797 4.09203 3.218L5.00001 5.00001C4.9425 5.02931 4.91973 5.01888 5.02464 5.01031C5.14123 5.00079 5.30347 5.00001 5.6 5.00001V3.00001ZM5.00001 5.00001L4.09203 3.218C3.7157 3.40974 3.40974 3.7157 3.218 4.09203L5.00001 5.00001ZM9.00001 4.00001V10H11V4.00001H9.00001ZM9.00001 10V20H11V10H9.00001ZM4.00001 11H10V9.00001H4.00001V11ZM10 11H20V9.00001H10V11Z" fill="currentColor"/>
                 </svg>
               </div>
-              <span className="text-sm text-neutral-900">Artifact access</span>
+              <span className="text-sm text-fg-base">Artifact access</span>
             </div>
-            <ChevronRight className="h-4 w-4 text-neutral-400 group-hover:text-neutral-600" />
+            <ChevronRight className="h-4 w-4 text-fg-muted group-hover:text-fg-subtle" />
           </button>
           
           <button 
             onClick={() => setCurrentView("sources")}
-            className="w-full flex items-center justify-between p-2 hover:bg-neutral-50 rounded-lg transition-colors group"
+            className="w-full flex items-center justify-between p-2 hover:bg-bg-subtle rounded-lg transition-colors group"
           >
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 flex items-center justify-center">
-                <svg className="h-4 w-4 text-neutral-700" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="h-4 w-4 text-fg-subtle" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M8.66659 2H3.99992C3.63173 2 3.33325 2.29848 3.33325 2.66667V13.3333C3.33325 13.7015 3.63173 14 3.99992 14H11.9999C12.3681 14 12.6666 13.7015 12.6666 13.3333V6M8.66659 2L12.6666 6M8.66659 2V5.33333C8.66659 5.70152 8.96505 6 9.33325 6H12.6666" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <span className="text-sm text-neutral-900">Sources access</span>
+              <span className="text-sm text-fg-base">Sources access</span>
             </div>
-            <ChevronRight className="h-4 w-4 text-neutral-400 group-hover:text-neutral-600" />
+            <ChevronRight className="h-4 w-4 text-fg-muted group-hover:text-fg-subtle" />
           </button>
           
           {/* Owner section - no hover state */}
           <div className="w-full flex items-center justify-between p-2 rounded-lg">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-neutral-200 rounded-full flex items-center justify-center text-xs font-medium text-neutral-700">
+              <div className="w-5 h-5 bg-bg-subtle-pressed rounded-full flex items-center justify-center text-xs font-medium text-fg-subtle">
                 M
               </div>
-              <span className="text-sm text-neutral-900">mike.ross@paulweiss.com (you)</span>
+              <span className="text-sm text-fg-base">mike.ross@paulweiss.com (you)</span>
             </div>
-            <span className="text-sm text-neutral-500">Owner</span>
+            <span className="text-sm text-fg-muted">Owner</span>
           </div>
         </div>
       </div>
                 
           {/* Bottom section */}
-          <div className="border-t border-neutral-200 py-4 px-5 flex items-center gap-2">
+          <div className="border-t border-border-base py-4 px-5 flex items-center gap-2">
         <div className="flex-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -163,23 +163,23 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
                 className="w-full justify-between"
               >
               <span className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-neutral-600" />
+                <Lock className="h-4 w-4 text-fg-subtle" />
                 Only people invited
               </span>
-              <ChevronDown className="h-4 w-4 text-neutral-600" />
+              <ChevronDown className="h-4 w-4 text-fg-subtle" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-[200px]">
             <DropdownMenuItem className="flex items-center gap-2">
-              <Lock className="h-4 w-4 text-neutral-600" />
+              <Lock className="h-4 w-4 text-fg-subtle" />
               <span>Only people invited</span>
             </DropdownMenuItem>
             <DropdownMenuItem className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-neutral-600" />
+              <Users className="h-4 w-4 text-fg-subtle" />
               <span>Anyone in your team</span>
             </DropdownMenuItem>
             <DropdownMenuItem className="flex items-center gap-2">
-              <Globe className="h-4 w-4 text-neutral-600" />
+              <Globe className="h-4 w-4 text-fg-subtle" />
               <span>Anyone with the link</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -233,7 +233,7 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <DialogTitle asChild>
-              <h2 className="text-base font-medium text-neutral-900">{titles[type]}</h2>
+              <h2 className="text-base font-medium text-fg-base">{titles[type]}</h2>
             </DialogTitle>
           </div>
           <DialogClose asChild>
@@ -257,7 +257,7 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleInvite()}
-                className="flex-1 text-sm text-neutral-900"
+                className="flex-1 text-sm text-fg-base"
               />
               <Button 
                 onClick={handleInvite}
@@ -266,7 +266,7 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
                 Invite
               </Button>
             </div>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-fg-muted">
               Only people you&apos;ve granted access will be able to access this project.
             </p>
           </div>
@@ -276,10 +276,10 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
             {users.map(user => (
               <div key={user.id} className="flex items-center justify-between p-2 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-neutral-200 rounded-full flex items-center justify-center text-xs font-medium text-neutral-700">
+                  <div className="w-5 h-5 bg-bg-subtle-pressed rounded-full flex items-center justify-center text-xs font-medium text-fg-subtle">
                     {user.initial}
                   </div>
-                  <span className="text-sm text-neutral-900">{user.email}</span>
+                  <span className="text-sm text-fg-base">{user.email}</span>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -322,7 +322,7 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
         </div>
         
         {/* Bottom section */}
-        <div className="border-t border-neutral-200 py-4 px-5 flex items-center gap-2">
+        <div className="border-t border-border-base py-4 px-5 flex items-center gap-2">
           <div className="flex-1 gap-2">
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -332,23 +332,23 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
                 className="w-full justify-between"
               >
                 <span className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-neutral-600" />
+                  <Lock className="h-4 w-4 text-fg-subtle" />
                   Only people invited
                 </span>
-                <ChevronDown className="h-4 w-4 text-neutral-600" />
+                <ChevronDown className="h-4 w-4 text-fg-subtle" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
               <DropdownMenuItem className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-neutral-600" />
+                <Lock className="h-4 w-4 text-fg-subtle" />
                 <span>Only people invited</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-neutral-600" />
+                <Users className="h-4 w-4 text-fg-subtle" />
                 <span>Anyone in your team</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-neutral-600" />
+                <Globe className="h-4 w-4 text-fg-subtle" />
                 <span>Anyone with the link</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -363,12 +363,12 @@ export default function ShareThreadDialog({ isOpen, onClose }: ShareThreadDialog
             {copied ? (
               <>
                 <Check className="h-4 w-4 text-green-600" />
-                <span className="text-neutral-900">Copied!</span>
+                <span className="text-fg-base">Copied!</span>
               </>
             ) : (
               <>
-                <Copy className="h-4 w-4 text-neutral-600" />
-                <span className="text-neutral-900">Copy link</span>
+                <Copy className="h-4 w-4 text-fg-subtle" />
+                <span className="text-fg-base">Copy link</span>
               </>
             )}
           </Button>

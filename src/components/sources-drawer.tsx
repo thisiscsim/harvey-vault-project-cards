@@ -160,13 +160,13 @@ export default function SourcesDrawer({
         <div className="flex gap-2">
           {/* Search Input */}
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fg-muted" />
             <Input
               type="text"
               placeholder="Search sources"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-sm text-neutral-900 h-8 shadow-none"
+              className="pl-9 text-sm text-fg-base h-8 shadow-none"
               disabled={true}
             />
           </div>
@@ -174,21 +174,21 @@ export default function SourcesDrawer({
           {/* Filter Dropdown */}
           <button 
             disabled
-            className="flex items-center gap-1 px-3 h-8 bg-white border border-neutral-200 rounded-md opacity-50 cursor-not-allowed"
+            className="flex items-center gap-1 px-3 h-8 bg-bg-base border border-border-base rounded-md opacity-50 cursor-not-allowed"
           >
-            <span className="text-sm text-neutral-900">All</span>
-            <ChevronDown className="h-4 w-4 text-neutral-400" />
+            <span className="text-sm text-fg-base">All</span>
+            <ChevronDown className="h-4 w-4 text-fg-muted" />
           </button>
         </div>
       </div>
       
       {/* Separator after search section */}
-      <div className="border-t border-neutral-200 -mx-4 mb-4" />
+      <div className="border-t border-border-base -mx-4 mb-4" />
       
       {/* Skeleton Sources List */}
       <div className="space-y-3 px-0.5 mt-2">
         {[1, 2, 3, 4, 5, 6].map((_, index) => (
-          <div key={index} className="border-b border-neutral-100 pb-3 last:border-b-0">
+          <div key={index} className="border-b border-border-base pb-3 last:border-b-0">
             <div className="flex items-start space-x-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -214,7 +214,7 @@ export default function SourcesDrawer({
       </div>
 
       {/* See all link skeleton */}
-      <div className="mt-6 pt-4 border-t border-neutral-200 -mx-4 px-4">
+      <div className="mt-6 pt-4 border-t border-border-base -mx-4 px-4">
         <div className="px-0.5">
           <Skeleton width={64} height={16} />
         </div>
@@ -297,22 +297,22 @@ export default function SourcesDrawer({
         <div className="flex gap-2">
           {/* Search Input */}
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fg-muted" />
             <Input
               type="text"
               placeholder="Search sources"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-sm text-neutral-900 h-8 shadow-none"
+              className="pl-9 text-sm text-fg-base h-8 shadow-none"
             />
           </div>
           
           {/* Filter Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1 px-3 h-8 bg-white border border-neutral-200 rounded-md hover:bg-neutral-50 transition-colors">
-                <span className="text-sm text-neutral-900">{filterType}</span>
-                <ChevronDown className="h-4 w-4 text-neutral-400" />
+              <button className="flex items-center gap-1 px-3 h-8 bg-bg-base border border-border-base rounded-md hover:bg-bg-subtle transition-colors">
+                <span className="text-sm text-fg-base">{filterType}</span>
+                <ChevronDown className="h-4 w-4 text-fg-muted" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-32">
@@ -334,19 +334,19 @@ export default function SourcesDrawer({
       </div>
       
       {/* Separator after search section */}
-      <div className="border-t border-neutral-200 -mx-4 mb-4" />
+      <div className="border-t border-border-base -mx-4 mb-4" />
       
       {/* Categorized Sources List */}
       <div className="mt-2">
         {Object.entries(categorizedSources).map(([category, sources], categoryIndex) => (
           <div key={category}>
             {categoryIndex > 0 && (
-              <div className="border-t border-neutral-200 my-4 -mx-4" />
+              <div className="border-t border-border-base my-4 -mx-4" />
             )}
             <div className="px-0.5">
               {/* Category Header */}
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-xs font-medium text-neutral-500">{category}</h3>
+                <h3 className="text-xs font-medium text-fg-muted">{category}</h3>
               </div>
               
               {/* Sources in Category */}
@@ -358,20 +358,20 @@ export default function SourcesDrawer({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-1">
                           {renderSourceIcon(source.icon)}
-                          <h4 className="font-medium text-neutral-900" style={{ fontSize: '12px' }}>
+                          <h4 className="font-medium text-fg-base" style={{ fontSize: '12px' }}>
                             {source.title}
                           </h4>
                           {source.url && (
                             <>
-                              <span className="text-neutral-400" style={{ fontSize: '12px' }}>•</span>
-                              <span className="text-neutral-600" style={{ fontSize: '12px' }}>
+                              <span className="text-fg-muted" style={{ fontSize: '12px' }}>•</span>
+                              <span className="text-fg-subtle" style={{ fontSize: '12px' }}>
                                 {source.url}
                               </span>
                             </>
                           )}
                         </div>
                         {source.description && (
-                          <p className="text-neutral-700 leading-relaxed mb-2" style={{ fontSize: '12px' }}>
+                          <p className="text-fg-subtle leading-relaxed mb-2" style={{ fontSize: '12px' }}>
                             {source.description}
                           </p>
                         )}
@@ -379,7 +379,7 @@ export default function SourcesDrawer({
                           {source.references.map((ref, refIndex) => (
                             <button
                               key={refIndex}
-                              className="inline-flex items-center justify-center border border-neutral-200 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium transition-colors"
+                              className="inline-flex items-center justify-center border border-border-base bg-bg-subtle hover:bg-bg-subtle-pressed text-fg-subtle font-medium transition-colors"
                               style={{ 
                                 width: '14px', 
                                 height: '14px',
@@ -403,7 +403,7 @@ export default function SourcesDrawer({
                         href={`https://${source.url}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="-mx-2 px-2 py-2.5 hover:bg-neutral-50 rounded-md transition-colors cursor-pointer block"
+                        className="-mx-2 px-2 py-2.5 hover:bg-bg-subtle rounded-md transition-colors cursor-pointer block"
                       >
                         {content}
                       </a>
@@ -411,7 +411,7 @@ export default function SourcesDrawer({
                   }
 
                   return (
-                    <div key={index} className="-mx-2 px-2 py-2.5 hover:bg-neutral-50 rounded-md transition-colors cursor-pointer">
+                    <div key={index} className="-mx-2 px-2 py-2.5 hover:bg-bg-subtle rounded-md transition-colors cursor-pointer">
                       {content}
                     </div>
                   );
@@ -423,9 +423,9 @@ export default function SourcesDrawer({
       </div>
 
       {/* See all link */}
-      <div className="mt-6 pt-4 border-t border-neutral-200 -mx-4 px-4">
+      <div className="mt-6 pt-4 border-t border-border-base -mx-4 px-4">
         <div className="px-0.5">
-          <button className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors flex items-center gap-1">
+          <button className="text-sm text-fg-subtle hover:text-fg-base transition-colors flex items-center gap-1">
             See all
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m9 18 6-6-6-6"/>
@@ -440,7 +440,7 @@ export default function SourcesDrawer({
   if (variant === "panel") {
     return (
       <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-neutral-300 scrollbar-track-transparent" style={{ width: '400px' }}>
+        <div className="h-full overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-fg-disabled scrollbar-track-transparent" style={{ width: '400px' }}>
           {isLoading ? skeletonContent : sourcesContent}
         </div>
       </div>
@@ -455,18 +455,18 @@ export default function SourcesDrawer({
           {/* Hidden title for accessibility */}
           <SheetTitle className="sr-only">Sources</SheetTitle>
           {/* Header - Matching panel variant */}
-          <div className="px-3 py-4 border-b border-neutral-200 flex items-center justify-between" style={{ height: '52px' }}>
-            <p className="text-neutral-900 font-medium truncate mr-4">Sources</p>
+          <div className="px-3 py-4 border-b border-border-base flex items-center justify-between" style={{ height: '52px' }}>
+            <p className="text-fg-base font-medium truncate mr-4">Sources</p>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-neutral-100 rounded-md transition-colors"
+              className="p-2 hover:bg-bg-subtle rounded-md transition-colors"
             >
-              <X size={16} className="text-neutral-600" />
+              <X size={16} className="text-fg-subtle" />
             </button>
           </div>
           
           {/* Content with custom scrollbar */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-neutral-300 scrollbar-track-transparent">
+          <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-fg-disabled scrollbar-track-transparent">
             {isLoading ? skeletonContent : sourcesContent}
           </div>
         </SheetContent>
@@ -502,22 +502,22 @@ export default function SourcesDrawer({
               stiffness: 200,
               mass: 0.8
             }}
-            className="absolute top-0 right-0 h-full bg-white border-l border-neutral-200 z-50 flex flex-col"
+            className="absolute top-0 right-0 h-full bg-bg-base border-l border-border-base z-50 flex flex-col"
             style={{ width: "min(400px, 100%)", maxWidth: "400px" }}
           >
             {/* Header - Matching existing headers */}
-            <div className="px-3 py-4 border-b border-neutral-200 flex items-center justify-between" style={{ height: '52px' }}>
-              <p className="text-neutral-900 font-medium truncate mr-4">Sources</p>
+            <div className="px-3 py-4 border-b border-border-base flex items-center justify-between" style={{ height: '52px' }}>
+              <p className="text-fg-base font-medium truncate mr-4">Sources</p>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-neutral-100 rounded-md transition-colors"
+                className="p-2 hover:bg-bg-subtle rounded-md transition-colors"
               >
-                <X size={16} className="text-neutral-600" />
+                <X size={16} className="text-fg-subtle" />
               </button>
             </div>
             
             {/* Content with custom scrollbar */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-neutral-300 scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-fg-disabled scrollbar-track-transparent">
               {isLoading ? (
                 <>
                   {/* Debug indicator */}

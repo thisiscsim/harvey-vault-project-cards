@@ -69,7 +69,7 @@ export default function ShareArtifactDialog({ isOpen, onClose, artifactTitle }: 
       <DialogContent className="w-[540px] max-w-[540px] p-0 gap-0 overflow-hidden">
         <div className="flex items-center justify-between pl-5 pr-3 py-3">
           <DialogTitle asChild>
-            <h2 className="text-base font-medium text-neutral-900">Share &ldquo;{artifactTitle}&rdquo;</h2>
+            <h2 className="text-base font-medium text-fg-base">Share &ldquo;{artifactTitle}&rdquo;</h2>
           </DialogTitle>
           <DialogClose asChild>
             <Button
@@ -92,7 +92,7 @@ export default function ShareArtifactDialog({ isOpen, onClose, artifactTitle }: 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleInvite()}
-                className="flex-1 text-sm text-neutral-900"
+                className="flex-1 text-sm text-fg-base"
               />
               <Button 
                 onClick={handleInvite}
@@ -101,7 +101,7 @@ export default function ShareArtifactDialog({ isOpen, onClose, artifactTitle }: 
                 Invite
               </Button>
             </div>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-fg-muted">
               Only people you&apos;ve granted access will be able to access this artifact.
             </p>
           </div>
@@ -111,10 +111,10 @@ export default function ShareArtifactDialog({ isOpen, onClose, artifactTitle }: 
             {users.map(user => (
               <div key={user.id} className="flex items-center justify-between p-2 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-neutral-200 rounded-full flex items-center justify-center text-xs font-medium text-neutral-700">
+                  <div className="w-5 h-5 bg-bg-subtle-pressed rounded-full flex items-center justify-center text-xs font-medium text-fg-subtle">
                     {user.initial}
                   </div>
-                  <span className="text-sm text-neutral-900">{user.email}</span>
+                  <span className="text-sm text-fg-base">{user.email}</span>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -157,12 +157,12 @@ export default function ShareArtifactDialog({ isOpen, onClose, artifactTitle }: 
             {/* Owner section - no hover state */}
             <div className="w-full flex items-center justify-between p-2 rounded-lg">
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 bg-neutral-200 rounded-full flex items-center justify-center text-xs font-medium text-neutral-700">
+                <div className="w-5 h-5 bg-bg-subtle-pressed rounded-full flex items-center justify-center text-xs font-medium text-fg-subtle">
                   M
                 </div>
-                <span className="text-sm text-neutral-900">mike.ross@paulweiss.com (you)</span>
+                <span className="text-sm text-fg-base">mike.ross@paulweiss.com (you)</span>
               </div>
-              <div className="h-auto py-1 px-2 text-sm font-normal text-neutral-500">
+              <div className="h-auto py-1 px-2 text-sm font-normal text-fg-muted">
                 Owner
               </div>
             </div>
@@ -170,7 +170,7 @@ export default function ShareArtifactDialog({ isOpen, onClose, artifactTitle }: 
         </div>
                 
         {/* Bottom section */}
-        <div className="border-t border-neutral-200 py-4 px-5 flex items-center gap-2">
+        <div className="border-t border-border-base py-4 px-5 flex items-center gap-2">
           <div className="flex-1">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -180,23 +180,23 @@ export default function ShareArtifactDialog({ isOpen, onClose, artifactTitle }: 
                   className="w-full justify-between"
                 >
                   <span className="flex items-center gap-2">
-                    <Lock className="h-4 w-4 text-neutral-600" />
+                    <Lock className="h-4 w-4 text-fg-subtle" />
                     Only people invited
                   </span>
-                  <ChevronDown className="h-4 w-4 text-neutral-600" />
+                  <ChevronDown className="h-4 w-4 text-fg-subtle" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-[200px]">
                 <DropdownMenuItem className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-neutral-600" />
+                  <Lock className="h-4 w-4 text-fg-subtle" />
                   <span>Only people invited</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-neutral-600" />
+                  <Users className="h-4 w-4 text-fg-subtle" />
                   <span>Anyone in your team</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-neutral-600" />
+                  <Globe className="h-4 w-4 text-fg-subtle" />
                   <span>Anyone with the link</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>

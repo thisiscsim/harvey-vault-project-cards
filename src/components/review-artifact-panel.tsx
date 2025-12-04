@@ -4,12 +4,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { UserPlus, Download, GripVertical, ArrowLeft, Layers, UserPlus as UserPlusIcon, Table2 } from "lucide-react";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -182,7 +176,7 @@ const AnimatedCell = ({
 
       {/* White overlay that covers the cell initially, disappears at start of 3rd wave */}
       <motion.div
-        className='absolute bg-white'
+        className='absolute bg-bg-base'
         style={{
           top: negativeMargin,
           left: negativeMargin,
@@ -526,7 +520,7 @@ export default function ReviewArtifactPanel({
                 onChange={() => toggleRowSelection(row.original.id)}
               />
             ) : (
-              <span className="text-neutral-500">{row.index + 1}</span>
+              <span className="text-fg-muted">{row.index + 1}</span>
             )}
           </div>
         );
@@ -553,61 +547,47 @@ export default function ReviewArtifactPanel({
               <span className='truncate'>{row.original.fileName}</span>
             </div>
             {hasGroupedFiles && (
-              <span className='px-1.5 py-0.5 bg-neutral-200 text-neutral-700 rounded text-xs font-medium flex-shrink-0'>
+              <span className='px-1.5 py-0.5 bg-bg-subtle-pressed text-fg-subtle rounded text-xs font-medium flex-shrink-0'>
                 +{row.original.groupedCount}
               </span>
             )}
             
             {/* Hover Control Bar */}
             {isHovered && (
-              <TooltipProvider delayDuration={0}>
-                <div 
-                  className='absolute right-0 flex items-center gap-0.5 bg-white rounded-md p-0.5 shadow-md border border-neutral-200'
-                >
+              <div 
+                className='absolute right-0 flex items-center gap-0.5 bg-bg-base rounded-md p-0.5 shadow-md border border-border-base'
+              >
                   {/* Create group or Manage grouped files button */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (hasGroupedFiles) {
-                            // Open manage grouped files popover
-                            setManageGroupedFilesRowId(row.original.id);
-                            setManageGroupedFilesAnchor(e.currentTarget.closest('td'));
-                          } else {
-                            // Select the row checkbox
-                            toggleRowSelection(row.original.id);
-                          }
-                        }}
-                        className='p-1.5 hover:bg-neutral-100 rounded transition-colors text-neutral-700'
-                      >
-                        <Layers size={14} />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{hasGroupedFiles ? 'Manage grouped files' : 'Create group'}</p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (hasGroupedFiles) {
+                        // Open manage grouped files popover
+                        setManageGroupedFilesRowId(row.original.id);
+                        setManageGroupedFilesAnchor(e.currentTarget.closest('td'));
+                      } else {
+                        // Select the row checkbox
+                        toggleRowSelection(row.original.id);
+                      }
+                    }}
+                    className='p-1.5 hover:bg-bg-subtle rounded transition-colors text-fg-subtle'
+                    title={hasGroupedFiles ? 'Manage grouped files' : 'Create group'}
+                  >
+                    <Layers size={14} />
+                  </button>
                   
                   {/* Assign button */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log('Assign');
-                        }}
-                        className='p-1.5 hover:bg-neutral-100 rounded transition-colors text-neutral-700'
-                      >
-                        <UserPlusIcon size={14} />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Assign</p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log('Assign');
+                    }}
+                    className='p-1.5 hover:bg-bg-subtle rounded transition-colors text-fg-subtle'
+                    title="Assign"
+                  >
+                    <UserPlusIcon size={14} />
+                  </button>
                 </div>
-              </TooltipProvider>
             )}
           </div>
         );
@@ -623,7 +603,7 @@ export default function ReviewArtifactPanel({
             {(isHovered || isDragging) ? (
               <GripVertical 
                 size={12} 
-                className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 flex-shrink-0" 
+                className="cursor-grab active:cursor-grabbing text-fg-muted hover:text-fg-subtle flex-shrink-0" 
               />
             ) : (
               <TypeIcon className="flex-shrink-0" />
@@ -665,7 +645,7 @@ export default function ReviewArtifactPanel({
             {(isHovered || isDragging) ? (
               <GripVertical 
                 size={12} 
-                className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 flex-shrink-0" 
+                className="cursor-grab active:cursor-grabbing text-fg-muted hover:text-fg-subtle flex-shrink-0" 
               />
             ) : (
               <SelectionIcon className="flex-shrink-0" />
@@ -700,7 +680,7 @@ export default function ReviewArtifactPanel({
             {(isHovered || isDragging) ? (
               <GripVertical 
                 size={12} 
-                className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 flex-shrink-0" 
+                className="cursor-grab active:cursor-grabbing text-fg-muted hover:text-fg-subtle flex-shrink-0" 
               />
             ) : (
               <TypeIcon className="flex-shrink-0" />
@@ -750,23 +730,23 @@ export default function ReviewArtifactPanel({
           width: PANEL_ANIMATION,
           opacity: { duration: 0.15, ease: "easeOut" }
         }}
-        className="flex-1 min-w-0 flex flex-col bg-white rounded-[12px] shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.04)] overflow-hidden m-2 ml-0"
+        className="flex-1 min-w-0 flex flex-col bg-bg-base overflow-x-hidden"
       >
         {/* Header */}
-        <div className="px-4 py-4 bg-white flex items-center justify-between" style={{ height: '52px' }}>
+        <div className="px-3 py-4 border-b border-border-base bg-bg-base flex items-center justify-between" style={{ height: '52px' }}>
           <div className="flex items-center flex-1 min-w-0">
             {/* Back Button */}
             {showBackButton && (
               <>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-neutral-100 rounded-md transition-colors mr-1"
+                  className="p-2 hover:bg-bg-subtle rounded-md transition-colors mr-1"
                 >
-                  <ArrowLeft size={16} className="text-neutral-600" />
+                  <ArrowLeft size={16} className="text-fg-subtle" />
                 </button>
                 
                 {/* Vertical Separator */}
-                <div className="w-px bg-neutral-200 mr-3" style={{ height: '20px' }}></div>
+                <div className="w-px bg-bg-subtle-pressed mr-3" style={{ height: '20px' }}></div>
               </>
             )}
             
@@ -789,7 +769,7 @@ export default function ReviewArtifactPanel({
                     e.target.scrollLeft = 0;
                   }, 0);
                 }}
-                className="text-neutral-900 font-medium bg-neutral-100 border border-neutral-400 outline-none px-2 py-1.5 -ml-1 rounded-md text-sm"
+                className="text-fg-base font-medium bg-bg-subtle border border-border-interactive outline-none px-2 py-1.5 -ml-1 rounded-md text-sm"
                 style={{ 
                   width: `${Math.min(Math.max(editedArtifactTitle.length * 8 + 40, 120), 600)}px`,
                   height: '32px'
@@ -799,7 +779,7 @@ export default function ReviewArtifactPanel({
             ) : (
               <button
                 onClick={onStartEditingTitle}
-                className="text-neutral-900 font-medium px-2 py-1.5 -ml-1 rounded-md hover:bg-neutral-100 transition-colors cursor-pointer text-sm"
+                className="text-fg-base font-medium px-2 py-1.5 -ml-1 rounded-md hover:bg-bg-subtle transition-colors cursor-pointer text-sm"
                 style={{ height: '32px' }}
               >
                 {selectedArtifact?.title || 'Artifact'}
@@ -811,19 +791,19 @@ export default function ReviewArtifactPanel({
             {/* Share Button */}
             <button 
               onClick={() => onShareArtifactDialogOpenChange(true)}
-              className="flex items-center gap-2 px-3 py-1.5 border border-neutral-200 rounded-md bg-white hover:bg-neutral-100 transition-colors text-neutral-900 text-sm font-normal" 
+              className="flex items-center gap-2 px-3 py-1.5 border border-border-base rounded-md bg-bg-base hover:bg-bg-subtle transition-colors text-fg-base text-sm font-normal" 
               style={{ height: '32px' }}
             >
-              <UserPlus size={16} className="text-neutral-900" />
+              <UserPlus size={16} className="text-fg-base" />
               <span className="text-sm font-normal">Share</span>
             </button>
             {/* Export Button */}
             <button 
-              className="flex items-center gap-2 px-3 py-1.5 border border-neutral-200 rounded-md bg-white hover:bg-neutral-100 transition-colors text-neutral-900 text-sm font-normal" 
+              className="flex items-center gap-2 px-3 py-1.5 border border-border-base rounded-md bg-bg-base hover:bg-bg-subtle transition-colors text-fg-base text-sm font-normal" 
               style={{ height: '32px' }}
               onClick={() => onExportReviewDialogOpenChange(true)}
             >
-              <Download size={16} className="text-neutral-900" />
+              <Download size={16} className="text-fg-base" />
               <span className="text-sm font-normal">Export</span>
             </button>
           </div>
@@ -844,10 +824,10 @@ export default function ReviewArtifactPanel({
         />
         
         {/* Content Area */}
-        <div className="flex-1 min-w-0 bg-neutral-0" style={{ minHeight: 0 }}>
+        <div className="flex-1 min-w-0 bg-bg-base" style={{ minHeight: 0 }}>
           {isEmpty ? (
             /* Empty State */
-            <div className="h-full relative bg-neutral-0 overflow-auto">
+            <div className="h-full relative bg-bg-base overflow-auto">
               {/* Table Header with File column and Add column */}
               <div className="border-b border-[#ECEBE9]">
                 <div className="flex items-center">
@@ -866,7 +846,7 @@ export default function ReviewArtifactPanel({
                   
                   {/* Add column button */}
                   <div className="px-3 h-8 flex items-center flex-1">
-                    <button className="flex items-center gap-1 text-neutral-600 hover:text-neutral-900 transition-colors">
+                    <button className="flex items-center gap-1 text-fg-subtle hover:text-fg-base transition-colors">
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                       </svg>
@@ -877,7 +857,7 @@ export default function ReviewArtifactPanel({
               </div>
               
               {/* Add file row */}
-              <div className="border-b border-[#ECEBE9] bg-white hover:bg-neutral-50 transition-colors">
+              <div className="border-b border-[#ECEBE9] bg-bg-base hover:bg-bg-subtle transition-colors">
                 <div className="flex items-center" style={{ height: '32px' }}>
                   {/* Plus icon in checkbox column */}
                   <div className="w-[48px] h-full flex items-center justify-center border-r border-[#ECEBE9] flex-shrink-0">
@@ -888,7 +868,7 @@ export default function ReviewArtifactPanel({
                   
                   {/* Add file text */}
                   <div className="px-3 h-full flex items-center" style={{ width: '220px' }}>
-                    <button className="flex items-center gap-1.5 text-neutral-900 hover:text-neutral-700 transition-colors">
+                    <button className="flex items-center gap-1.5 text-fg-base hover:text-fg-subtle transition-colors">
                       <Image 
                         src="/add-files-review.svg" 
                         alt="Add file" 
@@ -906,34 +886,34 @@ export default function ReviewArtifactPanel({
                 <div className="flex flex-col items-center" style={{ maxWidth: '420px' }}>
                   {/* Table Icon */}
                   <div className="mb-6">
-                    <Table2 size={24} className="text-neutral-400" strokeWidth={1.5} />
+                    <Table2 size={24} className="text-fg-muted" strokeWidth={1.5} />
                   </div>
                   
                   {/* Heading */}
-                  <h3 className="text-base font-medium text-neutral-900 mb-2">
+                  <h3 className="text-base font-medium text-fg-base mb-2">
                     Add documents to get started
                   </h3>
                   
                   {/* Description */}
-                  <p className="text-sm text-neutral-500 text-center mb-6" style={{ lineHeight: '20px' }}>
+                  <p className="text-sm text-fg-muted text-center mb-6" style={{ lineHeight: '20px' }}>
                     Upload files to run multiple queries at once — analyze, compare, and extract insights with Harvey’s purpose-built platform.
                   </p>
                   
                   {/* Upload Button */}
                   <button 
-                    className="flex items-center justify-center gap-2 px-3 py-1.5 bg-neutral-900 text-white rounded-md hover:bg-neutral-800 transition-colors mb-4 text-sm font-normal"
+                    className="flex items-center justify-center gap-2 px-3 py-1.5 bg-bg-interactive text-white rounded-md hover:bg-bg-interactive transition-colors mb-4 text-sm font-normal"
                     style={{ height: '32px' }}
                   >
                     Upload files
                   </button>
                   
                   {/* Divider Text */}
-                  <p className="text-xs text-neutral-500 mb-4">Or choose from</p>
+                  <p className="text-xs text-fg-muted mb-4">Or choose from</p>
                   
                   {/* Integration Options */}
                   <div className="flex items-center gap-4">
                     <button 
-                      className="flex items-center gap-2 px-3 py-1.5 border border-neutral-200 rounded-md bg-white hover:bg-neutral-100 transition-colors text-neutral-900 text-sm font-normal"
+                      className="flex items-center gap-2 px-3 py-1.5 border border-border-base rounded-md bg-bg-base hover:bg-bg-subtle transition-colors text-fg-base text-sm font-normal"
                       style={{ height: '32px' }}
                     >
                       <Image 
@@ -947,7 +927,7 @@ export default function ReviewArtifactPanel({
                     
                     <button 
                       onClick={() => setIManageDialogOpen(true)}
-                      className="flex items-center gap-2 px-3 py-1.5 border border-neutral-200 rounded-md bg-white hover:bg-neutral-100 transition-colors text-neutral-900 text-sm font-normal"
+                      className="flex items-center gap-2 px-3 py-1.5 border border-border-base rounded-md bg-bg-base hover:bg-bg-subtle transition-colors text-fg-base text-sm font-normal"
                       style={{ height: '32px' }}
                     >
                       <Image 
@@ -982,7 +962,7 @@ export default function ReviewArtifactPanel({
                   />
                 ))}
               </colgroup>
-              <thead className="sticky top-0 z-20 bg-white">
+              <thead className="sticky top-0 z-20 bg-bg-base">
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map(header => (
@@ -991,12 +971,12 @@ export default function ReviewArtifactPanel({
                         className={`px-3 h-8 text-left font-medium relative transition-colors ${
                           header.id === 'select' ? 'w-[48px]' : ''
                         } ${header.id === 'forceMajeureClause' ? 'w-[325px]' : ''} ${header.id === 'agreementParties' ? 'w-[325px]' : ''} ${header.id === 'assignmentProvisionSummary' ? 'w-[325px]' : ''} ${header.index !== 0 ? 'border-l border-[#ECEBE9]' : ''} ${header.index === headerGroup.headers.length - 1 ? 'border-r border-[#ECEBE9]' : ''} border-b border-[#ECEBE9] ${
-                          header.column.columnDef.meta?.draggable && draggedColumn === header.id ? 'bg-neutral-100' : 
-                          header.column.columnDef.meta?.draggable && hoveredHeader === header.id ? 'bg-neutral-50' : 'bg-white'
+                          header.column.columnDef.meta?.draggable && draggedColumn === header.id ? 'bg-bg-subtle' : 
+                          header.column.columnDef.meta?.draggable && hoveredHeader === header.id ? 'bg-bg-subtle' : 'bg-bg-base'
                         } ${
                           header.column.columnDef.meta?.draggable ? 'cursor-grab active:cursor-grabbing' : ''
                         } ${
-                          dropTarget === header.id && draggedColumn !== header.id ? 'border-l-2 border-l-neutral-900' : ''
+                          dropTarget === header.id && draggedColumn !== header.id ? 'border-l-2 border-l-border-interactive' : ''
                         }`}
                         style={{
                           fontSize: '12px',
@@ -1072,8 +1052,8 @@ export default function ReviewArtifactPanel({
                             <div
                               className={`absolute left-1/2 top-0 h-full transition-opacity ${
                                 header.column.getIsResizing() 
-                                  ? 'bg-neutral-900 opacity-100' 
-                                  : 'bg-neutral-400 opacity-0 group-hover:opacity-100'
+                                  ? 'bg-bg-interactive opacity-100' 
+                                  : 'bg-fg-disabled opacity-0 group-hover:opacity-100'
                               }`}
                               style={{
                                 width: '1.5px',
@@ -1108,7 +1088,7 @@ export default function ReviewArtifactPanel({
                         return (
                         <td
                           key={cell.id}
-                          className={`${cellPadding} h-8 ${isRowSelected ? 'bg-[#FAFAF9]' : isRowHovered ? 'bg-neutral-50' : 'bg-white'} ${cell.column.id === 'forceMajeureClause' ? 'w-[325px]' : ''} ${cell.column.id === 'agreementParties' ? 'w-[325px]' : ''} ${cell.column.id === 'assignmentProvisionSummary' ? 'w-[325px]' : ''} ${cell.column.id !== table.getAllColumns()[0].id ? 'border-l border-[#ECEBE9]' : ''} ${cellIndex === row.getVisibleCells().length - 1 ? 'border-r border-[#ECEBE9]' : ''} ${row.index !== table.getRowModel().rows.length - 1 ? 'border-b border-[#ECEBE9]' : ''} relative overflow-hidden ${isSelectColumn ? 'cursor-pointer' : ''}`}
+                          className={`${cellPadding} h-8 ${isRowSelected ? 'bg-[#FAFAF9]' : isRowHovered ? 'bg-bg-subtle' : 'bg-bg-base'} ${cell.column.id === 'forceMajeureClause' ? 'w-[325px]' : ''} ${cell.column.id === 'agreementParties' ? 'w-[325px]' : ''} ${cell.column.id === 'assignmentProvisionSummary' ? 'w-[325px]' : ''} ${cell.column.id !== table.getAllColumns()[0].id ? 'border-l border-[#ECEBE9]' : ''} ${cellIndex === row.getVisibleCells().length - 1 ? 'border-r border-[#ECEBE9]' : ''} ${row.index !== table.getRowModel().rows.length - 1 ? 'border-b border-[#ECEBE9]' : ''} relative overflow-hidden ${isSelectColumn ? 'cursor-pointer' : ''}`}
                           style={{ 
                             fontSize: '12px', 
                             lineHeight: '16px',
@@ -1119,7 +1099,7 @@ export default function ReviewArtifactPanel({
                           {/* Active border overlay for fileName cell */}
                           {cell.column.id === 'fileName' && manageGroupedFilesRowId === row.original.id && (
                             <div 
-                              className="absolute inset-0 pointer-events-none border-neutral-900 rounded-md"
+                              className="absolute inset-0 pointer-events-none border-border-interactive rounded-md"
                               style={{ 
                                 border: '1.5px solid',
                                 borderRadius: '6px'

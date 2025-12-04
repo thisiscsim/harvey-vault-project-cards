@@ -98,7 +98,7 @@ export default function DraftArtifactPanel({
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class: 'focus:outline-none min-h-full text-neutral-900',
+        class: 'focus:outline-none min-h-full text-fg-base',
         'data-placeholder': 'Start writing your document...',
       },
     },
@@ -121,10 +121,10 @@ export default function DraftArtifactPanel({
           width: PANEL_ANIMATION,
           opacity: { duration: 0.15, ease: "easeOut" }
         }}
-        className="flex-1 flex flex-col bg-white rounded-[12px] shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.04)] overflow-hidden m-2 ml-0"
+        className="flex-1 flex flex-col bg-bg-subtle overflow-hidden"
       >
         {/* Header */}
-        <div className="px-4 py-4 bg-white flex items-center justify-between" style={{ height: '52px' }}>
+        <div className="px-3 py-4 border-b border-border-base bg-bg-base flex items-center justify-between" style={{ height: '52px' }}>
           <div className="flex items-center">
             {/* Editable Artifact Title */}
             {isEditingArtifactTitle ? (
@@ -145,7 +145,7 @@ export default function DraftArtifactPanel({
                     e.target.scrollLeft = 0;
                   }, 0);
                 }}
-                className="text-neutral-900 font-medium bg-neutral-100 border border-neutral-400 outline-none px-2 py-1.5 -ml-1 rounded-md text-sm"
+                className="text-fg-base font-medium bg-bg-subtle border border-border-interactive outline-none px-2 py-1.5 -ml-1 rounded-md text-sm"
                 style={{ 
                   width: `${Math.min(Math.max(editedArtifactTitle.length * 8 + 40, 120), 600)}px`,
                   height: '32px'
@@ -155,7 +155,7 @@ export default function DraftArtifactPanel({
             ) : (
               <button
                 onClick={onStartEditingTitle}
-                className="text-neutral-900 font-medium px-2 py-1.5 -ml-1 rounded-md hover:bg-neutral-100 transition-colors cursor-pointer text-sm"
+                className="text-fg-base font-medium px-2 py-1.5 -ml-1 rounded-md hover:bg-bg-subtle transition-colors cursor-pointer text-sm"
                 style={{ height: '32px' }}
               >
                 {selectedArtifact?.title || 'Artifact'}
@@ -168,7 +168,7 @@ export default function DraftArtifactPanel({
             <Button 
               variant="secondary"
               onClick={() => onSourcesDrawerOpenChange?.(!sourcesDrawerOpen)}
-              className={cn("gap-2", sourcesDrawerOpen && "bg-neutral-100")}
+              className={cn("gap-2", sourcesDrawerOpen && "bg-bg-subtle")}
               style={{ height: '32px' }}
             >
               {sourcesDrawerOpen ? (
@@ -186,19 +186,19 @@ export default function DraftArtifactPanel({
             {/* Share Button */}
             <button 
               onClick={() => onShareArtifactDialogOpenChange(true)}
-              className="flex items-center gap-2 px-3 py-1.5 border border-neutral-200 rounded-md bg-white hover:bg-neutral-100 transition-colors text-neutral-900 text-sm font-normal" 
+              className="flex items-center gap-2 px-3 py-1.5 border border-border-base rounded-md bg-bg-base hover:bg-bg-subtle transition-colors text-fg-base text-sm font-normal" 
               style={{ height: '32px' }}
             >
-              <UserPlus size={16} className="text-neutral-900" />
+              <UserPlus size={16} className="text-fg-base" />
               <span className="text-sm font-normal">Share</span>
             </button>
             {/* Export Button */}
             <button 
-              className="flex items-center gap-2 px-3 py-1.5 border border-neutral-200 rounded-md bg-white hover:bg-neutral-100 transition-colors text-neutral-900 text-sm font-normal" 
+              className="flex items-center gap-2 px-3 py-1.5 border border-border-base rounded-md bg-bg-base hover:bg-bg-subtle transition-colors text-fg-base text-sm font-normal" 
               style={{ height: '32px' }}
               onClick={() => onExportReviewDialogOpenChange(true)}
             >
-              <Download size={16} className="text-neutral-900" />
+              <Download size={16} className="text-fg-base" />
               <span className="text-sm font-normal">Export</span>
             </button>
           </div>
@@ -217,7 +217,7 @@ export default function DraftArtifactPanel({
         
         {/* Content Area */}
         <div 
-          className="flex-1 overflow-y-auto bg-neutral-0 cursor-text"
+          className="flex-1 overflow-y-auto bg-bg-base cursor-text"
           onClick={(e) => {
             // Focus the editor when clicking anywhere in the content area
             // Only if the click target is the container itself or its direct children
