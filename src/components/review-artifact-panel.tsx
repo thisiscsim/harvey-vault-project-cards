@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { UserPlus, Download, GripVertical, ArrowLeft, Layers, UserPlus as UserPlusIcon } from "lucide-react";
+import { UserPlus, Download, GripVertical, ArrowLeft, Layers, UserPlus as UserPlusIcon, Check } from "lucide-react";
 import {
   createColumnHelper,
   flexRender,
@@ -13,6 +13,7 @@ import {
 } from '@tanstack/react-table';
 // Removed unused imports
 import ReviewTableToolbar from "@/components/review-table-toolbar";
+import { Button } from "@/components/ui/button";
 import ReviewFilterBar from "@/components/review-filter-bar";
 import ShareArtifactDialog from "@/components/share-artifact-dialog";
 import ExportReviewDialog from "@/components/export-review-dialog";
@@ -21,6 +22,12 @@ import ReviewTableActionBar from "@/components/review-table-action-bar";
 import ManageGroupedFilesPopover from "@/components/manage-grouped-files-popover";
 import Image from "next/image";
 import { SvgIcon } from "@/components/svg-icon";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 // Extend column meta type for draggable property
 declare module '@tanstack/table-core' {
@@ -278,6 +285,90 @@ export default function ReviewArtifactPanel({
   const [tableData, setTableData] = React.useState<Document[]>([]);
   const [manageGroupedFilesRowId, setManageGroupedFilesRowId] = React.useState<number | null>(null);
   const [manageGroupedFilesAnchor, setManageGroupedFilesAnchor] = React.useState<HTMLElement | null>(null);
+  const [addColumnPopoverOpen, setAddColumnPopoverOpen] = React.useState(false);
+  const fileColumnRef = React.useRef<HTMLTableCellElement>(null);
+  const [addColumnPopoverPosition, setAddColumnPopoverPosition] = React.useState({ top: 0, left: 0 });
+  
+  // Add column popover state
+  const [columnQuestion, setColumnQuestion] = React.useState('');
+  const [columnHeader, setColumnHeader] = React.useState('');
+  const [isGeneratingHeader, setIsGeneratingHeader] = React.useState(false);
+  const [hasStartedTyping, setHasStartedTyping] = React.useState(false);
+  const typingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [selectedModel, setSelectedModel] = React.useState('auto');
+  const [modelDropdownOpen, setModelDropdownOpen] = React.useState(false);
+  
+  // Update popover position when it opens
+  React.useEffect(() => {
+    if (addColumnPopoverOpen && fileColumnRef.current) {
+      const rect = fileColumnRef.current.getBoundingClientRect();
+      setAddColumnPopoverPosition({
+        top: rect.top + 4, // 4px from the top border of the table
+        left: rect.right + 4, // 4px gap to the right of the file column
+      });
+    }
+  }, [addColumnPopoverOpen]);
+  
+  // Reset popover state when closed
+  React.useEffect(() => {
+    if (!addColumnPopoverOpen) {
+      setColumnQuestion('');
+      setColumnHeader('');
+      setIsGeneratingHeader(false);
+      setHasStartedTyping(false);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    }
+  }, [addColumnPopoverOpen]);
+  
+  // Handle question input change with debounced header generation
+  const handleQuestionChange = (value: string) => {
+    setColumnQuestion(value);
+    
+    if (value.length > 0 && !hasStartedTyping) {
+      setHasStartedTyping(true);
+    }
+    
+    if (value.length === 0) {
+      setHasStartedTyping(false);
+      setColumnHeader('');
+      setIsGeneratingHeader(false);
+      return;
+    }
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Start skeleton loading
+    setIsGeneratingHeader(true);
+    setColumnHeader('');
+    
+    // Simulate header generation after user stops typing
+    typingTimeoutRef.current = setTimeout(() => {
+      // Generate a header based on the question (simplified simulation)
+      const generatedHeader = generateHeaderFromQuestion(value);
+      setColumnHeader(generatedHeader);
+      setIsGeneratingHeader(false);
+    }, 1000);
+  };
+  
+  // Simple function to generate a header from a question
+  const generateHeaderFromQuestion = (question: string): string => {
+    // Remove common question words and create a title
+    const cleanedQuestion = question
+      .replace(/^(what|who|when|where|why|how|is|are|does|do|can|will|should)\s+/i, '')
+      .replace(/\?$/, '')
+      .trim();
+    
+    // Capitalize first letter of each word and truncate
+    const words = cleanedQuestion.split(' ').slice(0, 4);
+    return words
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
   
   // Transform selected files into table data format - only for initialization
   const initialData: Document[] = React.useMemo(() => {
@@ -480,8 +571,11 @@ export default function ReviewArtifactPanel({
   // Check if all rows are selected
   const isAllSelected = selectedRows.size === data.length && selectedRows.size > 0;
   
-  // Define columns with access to textWrap state
-  const columns = React.useMemo(() => [
+  // Check if we're in "files only" mode (files added from iManage but no query run yet)
+  const isFilesOnlyMode = selectedFiles.length > 0;
+  
+  // Define base columns (select and fileName)
+  const baseColumns = React.useMemo(() => [
     columnHelper.display({
       id: 'select',
       size: 48,
@@ -535,9 +629,9 @@ export default function ReviewArtifactPanel({
         
         return (
           <div className='flex items-center gap-1.5 relative'>
-            <div className='flex items-center gap-1 px-2 py-1 rounded-[4px] bg-[#F3F3F1] flex-1 min-w-0'>
-              <PdfHarveyIcon className='h-3 w-3 text-gray-400 flex-shrink-0' />
-              <span className='truncate'>{row.original.fileName}</span>
+            <div className='flex items-center gap-1.5 flex-1 min-w-0'>
+              <PdfHarveyIcon className='h-[14px] w-[14px] flex-shrink-0' />
+              <span className='truncate border-b border-border-base text-fg-base'>{row.original.fileName}</span>
             </div>
             {hasGroupedFiles && (
               <span className='px-1.5 py-0.5 bg-bg-subtle-pressed text-fg-subtle rounded text-xs font-medium flex-shrink-0'>
@@ -586,6 +680,10 @@ export default function ReviewArtifactPanel({
         );
       },
     }),
+  ], [isAllSelected, toggleSelectAll, selectedRows, hoveredRow, toggleRowSelection]);
+  
+  // Define query columns (only shown when query has been run)
+  const queryColumns = React.useMemo(() => [
     columnHelper.accessor('agreementParties', {
       header: ({ column }) => {
         const isHovered = hoveredHeader === column.id;
@@ -616,9 +714,8 @@ export default function ReviewArtifactPanel({
         const value = getValue();
         return (
           <span
-            className={`block ${textWrap ? '' : 'truncate'}`}
+            className={`block ${textWrap ? '' : 'truncate'} ${value === 'No information' ? 'text-fg-muted' : 'text-fg-base'}`}
             style={{ 
-              color: value === 'No information' ? '#706D66' : 'inherit',
               whiteSpace: textWrap ? 'normal' : 'nowrap',
               wordBreak: textWrap ? 'break-word' : 'normal'
             }}
@@ -696,7 +793,15 @@ export default function ReviewArtifactPanel({
         }}>{getValue()}</span>
       ),
     }),
-  ], [textWrap, isAllSelected, toggleSelectAll, selectedRows, hoveredRow, toggleRowSelection, hoveredHeader, draggedColumn]);
+  ], [textWrap, hoveredHeader, draggedColumn]);
+  
+  // Combine columns based on mode - only show query columns when NOT in files-only mode
+  const columns = React.useMemo(() => {
+    if (isFilesOnlyMode) {
+      return baseColumns;
+    }
+    return [...baseColumns, ...queryColumns];
+  }, [isFilesOnlyMode, baseColumns, queryColumns]);
   
   const table = useReactTable({
     data,
@@ -812,6 +917,8 @@ export default function ReviewArtifactPanel({
           onAlignmentChange={setAlignment}
           textWrap={textWrap}
           onTextWrapChange={setTextWrap}
+          hasFiles={isFilesOnlyMode}
+          onAddColumn={() => setAddColumnPopoverOpen(true)}
         />
         
         {/* Filter Bar */}
@@ -834,7 +941,7 @@ export default function ReviewArtifactPanel({
                   <div className="px-3 h-8 flex items-center border-r border-border-base flex-1" style={{ minWidth: '220px' }}>
                     <div className="flex items-center gap-1">
                       <FileIcon />
-                      <span className="text-xs font-medium" style={{ color: '#514E48' }}>File</span>
+                      <span className="text-xs font-medium text-fg-subtle">File</span>
                     </div>
                   </div>
                 </div>
@@ -934,9 +1041,9 @@ export default function ReviewArtifactPanel({
           ) : (
             /* Table container */
             <div className="h-full relative">
-              <div className="absolute inset-0 overflow-x-auto overflow-y-auto">
+              <div className={`absolute inset-0 ${isFilesOnlyMode ? 'overflow-x-hidden' : 'overflow-x-auto'} overflow-y-auto`}>
               <table 
-              className={`border-separate border-spacing-0 border-b border-border-base ${
+              className={`border-separate border-spacing-0 ${
                 table.getState().columnSizingInfo.isResizingColumn ? 'select-none' : ''
               }`} 
               style={{ width: table.getCenterTotalSize() }}
@@ -957,7 +1064,8 @@ export default function ReviewArtifactPanel({
                     {headerGroup.headers.map(header => (
                       <th
                         key={header.id}
-                        className={`px-3 h-8 text-left font-medium relative transition-colors ${
+                        ref={header.id === 'fileName' ? fileColumnRef : undefined}
+                        className={`px-3 h-8 text-left font-medium relative transition-colors text-fg-subtle ${
                           header.id === 'select' ? 'w-[48px]' : ''
                         } ${header.id === 'forceMajeureClause' ? 'w-[325px]' : ''} ${header.id === 'agreementParties' ? 'w-[325px]' : ''} ${header.id === 'assignmentProvisionSummary' ? 'w-[325px]' : ''} ${header.index !== 0 ? 'border-l border-border-base' : ''} ${header.index === headerGroup.headers.length - 1 ? 'border-r border-border-base' : ''} border-b border-border-base ${
                           header.column.columnDef.meta?.draggable && draggedColumn === header.id ? 'bg-bg-subtle' : 
@@ -966,11 +1074,12 @@ export default function ReviewArtifactPanel({
                           header.column.columnDef.meta?.draggable ? 'cursor-grab active:cursor-grabbing' : ''
                         } ${
                           dropTarget === header.id && draggedColumn !== header.id ? 'border-l-2 border-l-border-interactive' : ''
+                        } ${
+                          header.index === headerGroup.headers.length - 1 && isFilesOnlyMode ? 'extend-border-line' : ''
                         }`}
                         style={{
                           fontSize: '12px',
                           lineHeight: '16px',
-                          color: '#514E48',
                           width: header.column.getSize(),
                           position: 'relative'
                         }}
@@ -1072,12 +1181,12 @@ export default function ReviewArtifactPanel({
                           cell.column.id !== 'select' &&
                           cell.column.id !== 'fileName';
                         const cellPadding =
-                          cell.column.id === 'fileName' ? 'px-1' : 'px-3';
+                          cell.column.id === 'fileName' ? 'px-3' : 'px-3';
                         const isSelectColumn = cell.column.id === 'select';
                         return (
                         <td
                           key={cell.id}
-                          className={`${cellPadding} h-8 ${isRowSelected ? 'bg-bg-subtle' : isRowHovered ? 'bg-bg-subtle-hover' : 'bg-bg-base'} ${cell.column.id === 'forceMajeureClause' ? 'w-[325px]' : ''} ${cell.column.id === 'agreementParties' ? 'w-[325px]' : ''} ${cell.column.id === 'assignmentProvisionSummary' ? 'w-[325px]' : ''} ${cell.column.id !== table.getAllColumns()[0].id ? 'border-l border-border-base' : ''} ${cellIndex === row.getVisibleCells().length - 1 ? 'border-r border-border-base' : ''} ${row.index !== table.getRowModel().rows.length - 1 ? 'border-b border-border-base' : ''} relative overflow-hidden ${isSelectColumn ? 'cursor-pointer' : ''}`}
+                          className={`${cellPadding} h-8 ${isRowSelected ? 'bg-bg-base-hover' : isRowHovered ? 'bg-bg-base-hover' : 'bg-bg-base'} ${cell.column.id === 'forceMajeureClause' ? 'w-[325px]' : ''} ${cell.column.id === 'agreementParties' ? 'w-[325px]' : ''} ${cell.column.id === 'assignmentProvisionSummary' ? 'w-[325px]' : ''} ${cell.column.id !== table.getAllColumns()[0].id ? 'border-l border-border-base' : ''} ${cellIndex === row.getVisibleCells().length - 1 ? 'border-r border-border-base' : ''} border-b border-border-base relative ${cellIndex === row.getVisibleCells().length - 1 && isFilesOnlyMode ? 'extend-border-line' : 'overflow-hidden'} ${isSelectColumn ? 'cursor-pointer' : ''}`}
                           style={{ 
                             fontSize: '12px', 
                             lineHeight: '16px',
@@ -1106,6 +1215,18 @@ export default function ReviewArtifactPanel({
                               cell.getContext()
                             )}
                           </AnimatedCell>
+                          {/* Hover detection area extending to the right for files-only mode */}
+                          {cellIndex === row.getVisibleCells().length - 1 && isFilesOnlyMode && (
+                            <div 
+                              className="absolute top-0 bottom-0 cursor-default"
+                              style={{ 
+                                left: '100%',
+                                width: '100vw',
+                              }}
+                              onMouseEnter={() => setHoveredRow(row.original.id)}
+                              onMouseLeave={() => setHoveredRow(null)}
+                            />
+                          )}
                         </td>
                         );
                       })}
@@ -1170,6 +1291,241 @@ export default function ReviewArtifactPanel({
             // TODO: Implement remove file from group
           }}
         />
+      )}
+      
+      {/* Add Column Popover */}
+      {addColumnPopoverOpen && (
+        <div 
+          className="fixed inset-0 z-50"
+          onClick={() => setAddColumnPopoverOpen(false)}
+        >
+          <div 
+            className="fixed bg-bg-base border border-border-base"
+            style={{ 
+              width: '400px',
+              top: addColumnPopoverPosition.top,
+              left: addColumnPopoverPosition.left,
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04)',
+              borderRadius: '10px'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header label */}
+            <div style={{ padding: '8px 12px', paddingTop: '10px' }}>
+              <p className="text-fg-muted" style={{ fontSize: '12px' }}>
+                Get started by asking Harvey a question.
+              </p>
+            </div>
+            
+            {/* Question textarea container */}
+            <div style={{ padding: '0 4px' }}>
+              <div className="relative">
+                <textarea
+                  value={columnQuestion}
+                  onChange={(e) => handleQuestionChange(e.target.value)}
+                  placeholder="What is the signing date of this agreement?"
+                  className="w-full bg-bg-subtle rounded-[8px] p-3 text-fg-base placeholder:text-fg-muted resize-none outline-none focus:ring-1 focus:ring-border-interactive text-sm"
+                  style={{ 
+                    minHeight: '120px',
+                    lineHeight: '1.5'
+                  }}
+                />
+              </div>
+            </div>
+            
+            {/* Expanded section - shows when user has started typing */}
+            {hasStartedTyping && (
+              <>
+                <div className="border-t border-border-base" />
+                {/* Helper text */}
+                <div style={{ padding: '8px 12px' }}>
+                  <p className="text-fg-muted" style={{ fontSize: '12px' }}>
+                    Header and type are generated based on your question.
+                  </p>
+                </div>
+                  
+                {/* Bottom section with header input, type and model selectors */}
+                <div className="flex flex-col" style={{ padding: '2px 0', gap: '2px' }}>
+                  {/* Header input */}
+                  <div style={{ padding: '0 4px' }}>
+                    <div>
+                      {isGeneratingHeader ? (
+                        <div className="bg-bg-subtle rounded-[8px] animate-pulse" style={{ height: '32px' }} />
+                      ) : (
+                        <input
+                          type="text"
+                          value={columnHeader}
+                          onChange={(e) => setColumnHeader(e.target.value)}
+                          placeholder="Column header"
+                          className="w-full px-3 bg-bg-subtle rounded-[8px] text-fg-base placeholder:text-fg-muted outline-none focus:ring-1 focus:ring-border-interactive text-sm"
+                          style={{ height: '32px', fontSize: '14px' }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                    
+                  {/* Type selector */}
+                  <div style={{ padding: '0 4px' }}>
+                    <button className="w-full flex items-center justify-between px-2 py-2 rounded-[8px] hover:bg-bg-subtle-hover transition-colors">
+                      <span className="text-fg-subtle font-medium" style={{ fontSize: '12px' }}>Type</span>
+                      {isGeneratingHeader ? (
+                        <div className="h-5 w-28 bg-bg-subtle rounded animate-pulse" />
+                      ) : (
+                        <div className="flex items-center gap-2 text-fg-base">
+                          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-fg-subtle">
+                            <path d="M3 4.5H15M3 9H15M3 13.5H10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          <span className="text-sm">Free response</span>
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-fg-muted">
+                            <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                    
+                  {/* Model selector */}
+                  <div style={{ padding: '0 4px' }}>
+                    <DropdownMenu open={modelDropdownOpen} onOpenChange={setModelDropdownOpen}>
+                      <DropdownMenuTrigger asChild>
+                        <button className={`w-full flex items-center justify-between px-2 py-2 rounded-[8px] hover:bg-bg-subtle-hover transition-colors ${modelDropdownOpen ? 'bg-bg-subtle-hover' : ''}`}>
+                          <span className="text-fg-subtle font-medium" style={{ fontSize: '12px' }}>Model</span>
+                          <div className="flex items-center gap-2 text-fg-base">
+                            <Image 
+                              src="/central_icons/Harvey Auto.svg" 
+                              alt="Harvey Auto" 
+                              width={24} 
+                              height={24}
+                            />
+                            <span className="text-sm">
+                              {selectedModel === 'auto' && 'Auto'}
+                              {selectedModel === 'gpt4' && 'GPT-5.1 with Harvey'}
+                              {selectedModel === 'claude' && 'Claude 4.5 Sonnet with Harvey'}
+                              {selectedModel === 'gemini' && 'Gemini 3 with Harvey'}
+                            </span>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-fg-muted">
+                              <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-[320px] p-1">
+                        {/* Auto option */}
+                        <button
+                          className={`w-full flex items-center gap-3 px-2 py-3 rounded-md hover:bg-bg-subtle-hover transition-colors ${selectedModel === 'auto' ? 'bg-bg-subtle' : ''}`}
+                          onClick={() => { setSelectedModel('auto'); setModelDropdownOpen(false); }}
+                        >
+                          <div className="w-5 flex items-center justify-center">
+                            {selectedModel === 'auto' && <Check className="w-4 h-4 text-fg-base" />}
+                          </div>
+                          <Image 
+                            src="/central_icons/Harvey Auto.svg" 
+                            alt="Harvey Auto" 
+                            width={32} 
+                            height={32}
+                          />
+                          <div className="flex flex-col items-start text-left">
+                            <span className="text-fg-base font-medium text-sm">Auto</span>
+                            <span className="text-fg-muted" style={{ fontSize: '12px' }}>Use the best model available</span>
+                          </div>
+                        </button>
+                        
+                        <DropdownMenuSeparator />
+                        
+                        {/* GPT-5.1 with Harvey */}
+                        <button
+                          className={`w-full flex items-center gap-3 px-2 py-3 rounded-md hover:bg-bg-subtle-hover transition-colors ${selectedModel === 'gpt4' ? 'bg-bg-subtle' : ''}`}
+                          onClick={() => { setSelectedModel('gpt4'); setModelDropdownOpen(false); }}
+                        >
+                          <div className="w-5 flex items-center justify-center">
+                            {selectedModel === 'gpt4' && <Check className="w-4 h-4 text-fg-base" />}
+                          </div>
+                          <Image 
+                            src="/central_icons/Harvey ChatGPT.svg" 
+                            alt="GPT-5.1" 
+                            width={32} 
+                            height={32}
+                          />
+                          <div className="flex flex-col items-start text-left">
+                            <span className="text-fg-base font-medium text-sm">GPT-5.1 with Harvey</span>
+                            <span className="text-fg-muted" style={{ fontSize: '12px' }}>OpenAI&apos;s latest model</span>
+                          </div>
+                        </button>
+                        
+                        {/* Claude 4.5 Sonnet with Harvey */}
+                        <button
+                          className={`w-full flex items-center gap-3 px-2 py-3 rounded-md hover:bg-bg-subtle-hover transition-colors ${selectedModel === 'claude' ? 'bg-bg-subtle' : ''}`}
+                          onClick={() => { setSelectedModel('claude'); setModelDropdownOpen(false); }}
+                        >
+                          <div className="w-5 flex items-center justify-center">
+                            {selectedModel === 'claude' && <Check className="w-4 h-4 text-fg-base" />}
+                          </div>
+                          <Image 
+                            src="/central_icons/Harvey Anthropic.svg" 
+                            alt="Claude" 
+                            width={32} 
+                            height={32}
+                          />
+                          <div className="flex flex-col items-start text-left">
+                            <span className="text-fg-base font-medium text-sm">Claude 4.5 Sonnet with Harvey</span>
+                            <span className="text-fg-muted" style={{ fontSize: '12px' }}>Anthropic&apos;s advanced reasoning model</span>
+                          </div>
+                        </button>
+                        
+                        {/* Gemini 3 with Harvey */}
+                        <button
+                          className={`w-full flex items-center gap-3 px-2 py-3 rounded-md hover:bg-bg-subtle-hover transition-colors ${selectedModel === 'gemini' ? 'bg-bg-subtle' : ''}`}
+                          onClick={() => { setSelectedModel('gemini'); setModelDropdownOpen(false); }}
+                        >
+                          <div className="w-5 flex items-center justify-center">
+                            {selectedModel === 'gemini' && <Check className="w-4 h-4 text-fg-base" />}
+                          </div>
+                          <Image 
+                            src="/central_icons/Harvey Google.svg" 
+                            alt="Gemini" 
+                            width={32} 
+                            height={32}
+                          />
+                          <div className="flex flex-col items-start text-left">
+                            <span className="text-fg-base font-medium text-sm">Gemini 3 with Harvey</span>
+                            <span className="text-fg-muted" style={{ fontSize: '12px' }}>Google&apos;s advanced reasoning model</span>
+                          </div>
+                        </button>
+                        
+                        <DropdownMenuSeparator />
+                        
+                        {/* Footer text */}
+                        <div className="px-2 py-3">
+                          <p className="text-fg-muted" style={{ fontSize: '12px' }}>
+                            Generates a response using the selected model augmented with Harvey&apos;s proprietary enhancements.
+                          </p>
+                        </div>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {/* Footer */}
+            <div className="border-t border-border-base flex items-center justify-between" style={{ padding: '8px 12px' }}>
+              <Button 
+                variant="secondary"
+                size="small"
+                onClick={() => setAddColumnPopoverOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="default"
+                size="small"
+                disabled={columnQuestion.length === 0 || columnHeader.length === 0 || isGeneratingHeader}
+              >
+                Run column
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
