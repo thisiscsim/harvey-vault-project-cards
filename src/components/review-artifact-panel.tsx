@@ -13,7 +13,7 @@ import {
 } from '@tanstack/react-table';
 import ReviewTableToolbar from "@/components/review-table-toolbar";
 import { Button, SmallButton } from "@/components/ui/button";
-import ReviewFilterBar, { FilterableColumn, DisplayColumn } from "@/components/review-filter-bar";
+import ReviewFilterBar, { FilterableColumn, DisplayColumn, ActiveFilter } from "@/components/review-filter-bar";
 import ShareArtifactDialog from "@/components/share-artifact-dialog";
 import ExportReviewDialog from "@/components/export-review-dialog";
 import IManageFilePickerDialog from "@/components/imanage-file-picker-dialog";
@@ -570,7 +570,49 @@ export default function ReviewArtifactPanel({
     setTableData(initialData);
   }, [initialData]);
 
-  const data = tableData;
+  // Active filters state
+  const [activeFilters, setActiveFilters] = React.useState<ActiveFilter[]>([]);
+  
+  // Filter the data based on active filters
+  const filteredData = React.useMemo(() => {
+    if (activeFilters.length === 0) return tableData;
+    
+    return tableData.filter(row => {
+      // Check each active filter
+      return activeFilters.every(filter => {
+        // Skip filters with no values selected (show all)
+        if (filter.values.length === 0) return true;
+        
+        let cellValue: string = '';
+        
+        if (filter.columnId === 'fileName') {
+          cellValue = row.fileName;
+        } else {
+          // Get value from dynamic column data
+          const columnData = cellDataRef.current[filter.columnId];
+          if (columnData && columnData[row.id]) {
+            cellValue = columnData[row.id].response || '';
+          }
+        }
+        
+        const matchesFilter = filter.values.some(filterValue => 
+          cellValue.toLowerCase().includes(filterValue.toLowerCase()) ||
+          filterValue.toLowerCase().includes(cellValue.toLowerCase()) ||
+          cellValue === filterValue
+        );
+        
+        // Apply condition logic
+        if (filter.condition === 'is_any_of') {
+          return matchesFilter;
+        } else {
+          // is_none_of
+          return !matchesFilter;
+        }
+      });
+    });
+  }, [tableData, activeFilters]);
+
+  const data = filteredData;
   
   // Handle group files
   const handleGroupFiles = React.useCallback(() => {
@@ -1201,16 +1243,27 @@ export default function ReviewArtifactPanel({
             // Only show filter columns when we have files AND at least one dynamic column
             if (!isFilesOnlyMode || dynamicColumns.length === 0) return [];
             
+            // Get unique file names from tableData
+            const fileNames = tableData.map(row => row.fileName);
+            
             const filterColumns: FilterableColumn[] = [
-              { id: 'fileName', header: 'File', type: 'file' },
+              { id: 'fileName', header: 'File name', type: 'file', values: fileNames },
             ];
             
-            // Add dynamic columns
+            // Add dynamic columns with their unique values from cellDataRef
             dynamicColumns.forEach(col => {
+              const columnData = cellDataRef.current[col.id] || {};
+              const uniqueValues = [...new Set(
+                Object.values(columnData)
+                  .map(cell => cell.response)
+                  .filter(val => val && val.trim() !== '')
+              )];
+              
               filterColumns.push({
                 id: col.id,
                 header: col.header,
                 type: 'text',
+                values: uniqueValues.length > 0 ? uniqueValues : ['No values yet'],
               });
             });
             
@@ -1257,6 +1310,7 @@ export default function ReviewArtifactPanel({
               return reordered;
             });
           }}
+          onFiltersChange={setActiveFilters}
         />
         
         {/* Content Area */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SmallButton } from "@/components/ui/button";
 import { SvgIcon } from "@/components/svg-icon";
 import { X, Check, GripVertical } from "lucide-react";
@@ -9,7 +9,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
+import { ChevronRight } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -41,10 +45,21 @@ const TextColumnIcon = () => (
   </svg>
 );
 
+// Date column icon
+const DateColumnIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2.25" y="3.75" width="13.5" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
+    <path d="M2.25 7.5H15.75" stroke="currentColor" strokeWidth="1.5"/>
+    <path d="M5.25 2.25V5.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M12.75 2.25V5.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
 export interface FilterableColumn {
   id: string;
   header: string;
-  type: 'file' | 'text' | 'selection';
+  type: 'file' | 'text' | 'selection' | 'date';
+  values?: string[]; // Possible values for this column
 }
 
 export interface DisplayColumn {
@@ -57,32 +72,183 @@ export interface DisplayColumn {
 export interface ActiveFilter {
   columnId: string;
   columnHeader: string;
-  columnType: 'file' | 'text' | 'selection';
+  columnType: 'file' | 'text' | 'selection' | 'date';
   condition: 'is_any_of' | 'is_none_of';
-  value: string;
+  values: string[]; // Selected values
 }
+
+// Get icon for column type
+const getColumnIcon = (type: 'file' | 'text' | 'selection' | 'date') => {
+  switch (type) {
+    case 'file':
+      return <FileColumnIcon />;
+    case 'date':
+      return <DateColumnIcon />;
+    default:
+      return <TextColumnIcon />;
+  }
+};
+
+// Column Filter Submenu Content
+const ColumnFilterSubmenuContent = ({
+  column,
+  selectedValues,
+  onToggleValue,
+}: {
+  column: FilterableColumn;
+  selectedValues: string[];
+  onToggleValue: (value: string) => void;
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  const filteredValues = (column.values || []).filter(value =>
+    value.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  return (
+    <div className="w-[240px]">
+      {/* Search input */}
+      <div className="p-2 border-b border-border-base">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-2 py-1.5 text-xs bg-bg-base border border-border-base rounded-[4px] outline-none focus:border-border-strong placeholder:text-fg-muted"
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+      
+      {/* Values list */}
+      <div className="p-1 max-h-[240px] overflow-y-auto">
+        {filteredValues.length > 0 ? (
+          filteredValues.map((value) => {
+            const isSelected = selectedValues.includes(value);
+            return (
+              <div
+                key={value}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onToggleValue(value);
+                }}
+                className="flex items-center gap-2 px-2 py-2 text-xs rounded-[4px] hover:bg-bg-subtle-hover cursor-pointer"
+              >
+                <div
+                  className={`w-3.5 h-3.5 shrink-0 rounded-[3px] border flex items-center justify-center transition-colors ${
+                    isSelected
+                      ? 'bg-bg-interactive border-border-interactive'
+                      : 'border-border-base bg-transparent'
+                  }`}
+                >
+                  {isSelected && <Check size={10} className="text-fg-on-color" />}
+                </div>
+                <span className="truncate">{value}</span>
+              </div>
+            );
+          })
+        ) : (
+          <div className="px-2 py-2 text-xs text-fg-muted text-center">
+            No values found
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // Filter Chip Component - button group style
 const FilterChip = ({ 
   filter, 
+  column,
+  allColumns,
+  onColumnChange,
   onConditionChange, 
+  onToggleValue,
   onRemove 
 }: { 
   filter: ActiveFilter;
+  column?: FilterableColumn;
+  allColumns: FilterableColumn[];
+  onColumnChange: (newColumnId: string) => void;
   onConditionChange: (condition: 'is_any_of' | 'is_none_of') => void;
+  onToggleValue: (value: string) => void;
   onRemove: () => void;
 }) => {
+  const [columnOpen, setColumnOpen] = useState(false);
   const [conditionOpen, setConditionOpen] = useState(false);
+  const [valuesOpen, setValuesOpen] = useState(false);
+  const [columnSearchQuery, setColumnSearchQuery] = useState("");
+  
+  // Format values display
+  const getValuesDisplay = () => {
+    if (filter.values.length === 0) return 'All values';
+    if (filter.values.length === 1) return filter.values[0];
+    return `${filter.values.length} selected`;
+  };
+  
+  // Filter columns based on search
+  const filteredColumns = allColumns.filter(col =>
+    col.header.toLowerCase().includes(columnSearchQuery.toLowerCase())
+  );
   
   return (
     <div className="inline-flex items-center h-6 rounded-[6px] border border-border-base bg-button-neutral overflow-hidden">
-      {/* Column name segment */}
-      <div className="flex items-center gap-1 px-2 h-full text-xs text-fg-base border-r border-border-base">
-        <span className="text-fg-subtle">
-          {filter.columnType === 'file' ? <FileColumnIcon /> : <TextColumnIcon />}
-        </span>
-        <span className="max-w-[80px] truncate">{filter.columnHeader}</span>
-      </div>
+      {/* Column name segment - clickable dropdown */}
+      <DropdownMenu open={columnOpen} onOpenChange={(open) => {
+        setColumnOpen(open);
+        if (!open) setColumnSearchQuery("");
+      }}>
+        <DropdownMenuTrigger asChild>
+          <button className="flex items-center gap-1 px-2 h-full text-xs text-fg-base hover:bg-button-neutral-hover transition-colors border-r border-border-base">
+            <span className="text-fg-subtle">
+              {getColumnIcon(filter.columnType)}
+            </span>
+            <span className="max-w-[80px] truncate">{filter.columnHeader}</span>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-[240px] p-0 rounded-[6px]">
+          {/* Search input */}
+          <div className="p-2 border-b border-border-base">
+            <input
+              type="text"
+              placeholder="Search columns..."
+              value={columnSearchQuery}
+              onChange={(e) => setColumnSearchQuery(e.target.value)}
+              className="w-full px-2 py-1.5 text-xs bg-transparent border-none outline-none placeholder:text-fg-muted"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          
+          {/* Column list */}
+          <div className="p-1 max-h-[240px] overflow-y-auto">
+            {filteredColumns.length > 0 ? (
+              filteredColumns.map((col) => (
+                <DropdownMenuItem
+                  key={col.id}
+                  onClick={() => {
+                    onColumnChange(col.id);
+                    setColumnOpen(false);
+                  }}
+                  className="flex items-center justify-between gap-2 px-2 py-2 text-xs rounded-[4px]"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-fg-subtle shrink-0">
+                      {getColumnIcon(col.type)}
+                    </span>
+                    <span className="truncate">{col.header}</span>
+                  </div>
+                  {col.id === filter.columnId && <Check size={14} className="text-fg-base shrink-0" />}
+                </DropdownMenuItem>
+              ))
+            ) : (
+              <div className="px-2 py-2 text-xs text-fg-muted text-center">
+                No columns found
+              </div>
+            )}
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
       
       {/* Condition dropdown segment */}
       <DropdownMenu open={conditionOpen} onOpenChange={setConditionOpen}>
@@ -93,17 +259,17 @@ const FilterChip = ({
             {filter.condition === 'is_any_of' ? 'is any of' : 'is none of'}
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-[140px] p-0.5 rounded-[6px]">
+        <DropdownMenuContent align="start" className="w-[140px] p-1 rounded-[6px]">
           <DropdownMenuItem 
             onClick={() => onConditionChange('is_any_of')}
-            className="flex items-center justify-between px-2 py-1 text-xs rounded-[4px]"
+            className="flex items-center justify-between px-2 py-2 text-xs rounded-[4px]"
           >
             <span>is any of</span>
             {filter.condition === 'is_any_of' && <Check size={14} className="text-fg-base" />}
           </DropdownMenuItem>
           <DropdownMenuItem 
             onClick={() => onConditionChange('is_none_of')}
-            className="flex items-center justify-between px-2 py-1 text-xs rounded-[4px]"
+            className="flex items-center justify-between px-2 py-2 text-xs rounded-[4px]"
           >
             <span>is none of</span>
             {filter.condition === 'is_none_of' && <Check size={14} className="text-fg-base" />}
@@ -111,10 +277,27 @@ const FilterChip = ({
         </DropdownMenuContent>
       </DropdownMenu>
       
-      {/* Value segment */}
-      <div className="flex items-center px-2 h-full text-xs text-fg-base border-r border-border-base">
-        <span className="max-w-[100px] truncate">{filter.value || 'All values'}</span>
-      </div>
+      {/* Value segment - clickable dropdown */}
+      <DropdownMenu open={valuesOpen} onOpenChange={setValuesOpen}>
+        <DropdownMenuTrigger asChild>
+          <button className="flex items-center px-2 h-full text-xs text-fg-base hover:bg-button-neutral-hover transition-colors border-r border-border-base">
+            <span className="max-w-[100px] truncate">{getValuesDisplay()}</span>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="p-0 rounded-[6px]">
+          {column ? (
+            <ColumnFilterSubmenuContent
+              column={column}
+              selectedValues={filter.values}
+              onToggleValue={onToggleValue}
+            />
+          ) : (
+            <div className="w-[200px] p-2 text-xs text-fg-muted text-center">
+              No values available
+            </div>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
       
       {/* Close button segment */}
       <button 
@@ -154,12 +337,12 @@ const SortableColumnItem = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center justify-between px-2 py-1 rounded-[4px] hover:bg-bg-subtle-hover"
+      className="flex items-center justify-between gap-2 px-2 py-2 rounded-[4px] hover:bg-bg-subtle-hover"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
         <button
           onClick={() => onToggleVisibility(column.id)}
-          className={`w-3.5 h-3.5 rounded-[3px] border flex items-center justify-center transition-colors ${
+          className={`w-3.5 h-3.5 shrink-0 rounded-[3px] border flex items-center justify-center transition-colors ${
             column.visible 
               ? 'bg-bg-interactive border-border-interactive' 
               : 'border-border-base bg-transparent hover:border-border-strong'
@@ -167,12 +350,12 @@ const SortableColumnItem = ({
         >
           {column.visible && <Check size={10} className="text-fg-on-color" />}
         </button>
-        <span className="text-xs text-fg-base">{column.header}</span>
+        <span className="text-xs text-fg-base truncate">{column.header}</span>
       </div>
       <button
         {...attributes}
         {...listeners}
-        className="p-0.5 text-fg-muted hover:text-fg-subtle cursor-grab active:cursor-grabbing"
+        className="p-0.5 shrink-0 text-fg-muted hover:text-fg-subtle cursor-grab active:cursor-grabbing"
       >
         <GripVertical size={14} />
       </button>
@@ -221,14 +404,14 @@ const DisplayOptionsContent = ({
       {/* Fixed columns section */}
       {fixedColumns.length > 0 && (
         <div className="p-1">
-          <div className="text-xs text-fg-muted px-2 py-1">Fixed columns</div>
+          <div className="text-xs text-fg-muted px-2 py-2">Fixed columns</div>
           {fixedColumns.map(column => (
             <div 
               key={column.id}
-              className="flex items-center gap-2 px-2 py-1"
+              className="flex items-center gap-2 px-2 py-2 min-w-0"
             >
-              <FileColumnIcon />
-              <span className="text-xs text-fg-base">{column.header}</span>
+              <span className="shrink-0"><FileColumnIcon /></span>
+              <span className="text-xs text-fg-base truncate">{column.header}</span>
             </div>
           ))}
         </div>
@@ -265,7 +448,7 @@ const DisplayOptionsContent = ({
       
       {/* Empty state */}
       {sortableColumns.length === 0 && fixedColumns.length === 0 && (
-        <div className="px-2 py-1 text-xs text-fg-muted text-center">
+        <div className="px-2 py-2 text-xs text-fg-muted text-center">
           No columns to display
         </div>
       )}
@@ -277,6 +460,7 @@ interface ReviewFilterBarProps {
   onFilter?: () => void;
   columns?: FilterableColumn[];
   onColumnFilter?: (columnId: string) => void;
+  onFiltersChange?: (filters: ActiveFilter[]) => void;
   hasFilters?: boolean;
   displayColumns?: DisplayColumn[];
   onToggleColumnVisibility?: (columnId: string) => void;
@@ -287,6 +471,7 @@ export default function ReviewFilterBar({
   onFilter,
   columns = [],
   onColumnFilter,
+  onFiltersChange,
   hasFilters = false,
   displayColumns = [],
   onToggleColumnVisibility,
@@ -296,24 +481,53 @@ export default function ReviewFilterBar({
   const hasDisplayColumns = displayColumns.length > 0;
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
   const [displayOptionsOpen, setDisplayOptionsOpen] = useState(false);
+  const [columnSearchQuery, setColumnSearchQuery] = useState("");
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   
-  const handleColumnSelect = (column: FilterableColumn) => {
-    // Check if filter for this column already exists
-    if (activeFilters.some(f => f.columnId === column.id)) {
-      return;
+  // Track pending filter selections (before submenu closes)
+  const [pendingSelections, setPendingSelections] = useState<Record<string, string[]>>({});
+  
+  // Notify parent when filters change
+  useEffect(() => {
+    onFiltersChange?.(activeFilters);
+  }, [activeFilters, onFiltersChange]);
+  
+  const handleToggleValue = (columnId: string, value: string) => {
+    const currentSelections = pendingSelections[columnId] || [];
+    const newSelections = currentSelections.includes(value)
+      ? currentSelections.filter(v => v !== value)
+      : [...currentSelections, value];
+    
+    setPendingSelections(prev => ({
+      ...prev,
+      [columnId]: newSelections,
+    }));
+    
+    // Find the column
+    const column = columns.find(c => c.id === columnId);
+    if (!column) return;
+    
+    // Check if filter already exists
+    const existingFilter = activeFilters.find(f => f.columnId === columnId);
+    
+    if (existingFilter) {
+      // Update existing filter
+      setActiveFilters(activeFilters.map(f => 
+        f.columnId === columnId ? { ...f, values: newSelections } : f
+      ));
+    } else {
+      // Create new filter
+      const newFilter: ActiveFilter = {
+        columnId: column.id,
+        columnHeader: column.header,
+        columnType: column.type,
+        condition: 'is_any_of',
+        values: newSelections,
+      };
+      setActiveFilters([...activeFilters, newFilter]);
     }
     
-    // Add new filter
-    const newFilter: ActiveFilter = {
-      columnId: column.id,
-      columnHeader: column.header,
-      columnType: column.type,
-      condition: 'is_any_of',
-      value: 'All values',
-    };
-    
-    setActiveFilters([...activeFilters, newFilter]);
-    onColumnFilter?.(column.id);
+    onColumnFilter?.(columnId);
   };
   
   const handleConditionChange = (filterId: string, condition: 'is_any_of' | 'is_none_of') => {
@@ -324,19 +538,63 @@ export default function ReviewFilterBar({
   
   const handleRemoveFilter = (filterId: string) => {
     setActiveFilters(activeFilters.filter(f => f.columnId !== filterId));
+    setPendingSelections(prev => {
+      const next = { ...prev };
+      delete next[filterId];
+      return next;
+    });
   };
   
-  // Get columns that are not already filtered
-  const availableColumns = columns.filter(
-    col => !activeFilters.some(f => f.columnId === col.id)
+  const handleColumnChange = (oldColumnId: string, newColumnId: string) => {
+    // Find the new column
+    const newColumn = columns.find(c => c.id === newColumnId);
+    if (!newColumn) return;
+    
+    // Update the filter with new column info, reset values
+    setActiveFilters(activeFilters.map(f => 
+      f.columnId === oldColumnId 
+        ? { 
+            ...f, 
+            columnId: newColumn.id,
+            columnHeader: newColumn.header,
+            columnType: newColumn.type,
+            values: [], // Reset values when column changes
+          } 
+        : f
+    ));
+    
+    // Update pending selections
+    setPendingSelections(prev => {
+      const next = { ...prev };
+      delete next[oldColumnId];
+      next[newColumnId] = [];
+      return next;
+    });
+  };
+  
+  // Filter columns based on search query
+  const filteredColumns = columns.filter(col =>
+    col.header.toLowerCase().includes(columnSearchQuery.toLowerCase())
   );
+  
+  // Get selected values for a column (from active filter or pending selections)
+  const getSelectedValues = (columnId: string): string[] => {
+    const activeFilter = activeFilters.find(f => f.columnId === columnId);
+    if (activeFilter) return activeFilter.values;
+    return pendingSelections[columnId] || [];
+  };
   
   return (
     <div className="px-3 py-2 border-b border-border-base bg-bg-base flex items-center justify-between" style={{ height: '42px' }}>
       <div className="flex items-center gap-2">
         {/* Filter Button with Dropdown */}
-        {hasColumns && availableColumns.length > 0 ? (
-          <DropdownMenu>
+        {hasColumns ? (
+          <DropdownMenu open={filterDropdownOpen} onOpenChange={(open) => {
+            setFilterDropdownOpen(open);
+            if (!open) {
+              setColumnSearchQuery("");
+            }
+          }}>
             <DropdownMenuTrigger asChild>
               <div>
                 <SmallButton 
@@ -347,19 +605,48 @@ export default function ReviewFilterBar({
                 </SmallButton>
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[200px] p-0.5 rounded-[6px]">
-              {availableColumns.map((column) => (
-                <DropdownMenuItem 
-                  key={column.id}
-                  onClick={() => handleColumnSelect(column)}
-                  className="flex items-center gap-2 px-2 py-1 text-xs rounded-[4px]"
-                >
-                  <span className="text-fg-subtle">
-                    {column.type === 'file' ? <FileColumnIcon /> : <TextColumnIcon />}
-                  </span>
-                  <span>{column.header}</span>
-                </DropdownMenuItem>
-              ))}
+            <DropdownMenuContent align="start" className="w-[240px] p-0 rounded-[6px]">
+              {/* Search columns input */}
+              <div className="p-2 border-b border-border-base">
+                <input
+                  type="text"
+                  placeholder="Search columns..."
+                  value={columnSearchQuery}
+                  onChange={(e) => setColumnSearchQuery(e.target.value)}
+                  className="w-full px-2 py-1.5 text-xs bg-transparent border-none outline-none placeholder:text-fg-muted"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              
+              {/* Column list with submenus */}
+              <div className="p-1">
+                {filteredColumns.length > 0 ? (
+                  filteredColumns.map((column) => (
+                    <DropdownMenuSub key={column.id}>
+                      <DropdownMenuSubTrigger className="flex items-center justify-between gap-2 px-2 py-2 text-xs rounded-[4px] w-full">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-fg-subtle shrink-0">
+                            {getColumnIcon(column.type)}
+                          </span>
+                          <span className="truncate">{column.header}</span>
+                        </div>
+                        <ChevronRight size={14} className="text-fg-muted shrink-0" />
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="p-0 rounded-[6px]">
+                        <ColumnFilterSubmenuContent
+                          column={column}
+                          selectedValues={getSelectedValues(column.id)}
+                          onToggleValue={(value) => handleToggleValue(column.id, value)}
+                        />
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  ))
+                ) : (
+                  <div className="px-2 py-2 text-xs text-fg-muted text-center">
+                    No columns found
+                  </div>
+                )}
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
@@ -378,7 +665,11 @@ export default function ReviewFilterBar({
           <FilterChip
             key={filter.columnId}
             filter={filter}
+            column={columns.find(c => c.id === filter.columnId)}
+            allColumns={columns}
+            onColumnChange={(newColumnId) => handleColumnChange(filter.columnId, newColumnId)}
             onConditionChange={(condition) => handleConditionChange(filter.columnId, condition)}
+            onToggleValue={(value) => handleToggleValue(filter.columnId, value)}
             onRemove={() => handleRemoveFilter(filter.columnId)}
           />
         ))}
@@ -398,7 +689,7 @@ export default function ReviewFilterBar({
                 </SmallButton>
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="p-0 rounded-[6px]">
+            <DropdownMenuContent align="end" className="p-1 rounded-[6px]">
               <DisplayOptionsContent
                 displayColumns={displayColumns}
                 onToggleVisibility={(id) => onToggleColumnVisibility?.(id)}
