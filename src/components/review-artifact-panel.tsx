@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { GripVertical, ArrowLeft, Layers, UserPlus, Check, X, Download } from "lucide-react";
+import { GripVertical, ArrowLeft, Layers, UserPlus, Check, X, Download, ChevronRight, ChevronDown } from "lucide-react";
 import {
   createColumnHelper,
   flexRender,
@@ -18,7 +18,7 @@ import ShareArtifactDialog from "@/components/share-artifact-dialog";
 import ExportReviewDialog from "@/components/export-review-dialog";
 import IManageFilePickerDialog from "@/components/imanage-file-picker-dialog";
 import ReviewTableActionBar from "@/components/review-table-action-bar";
-import ManageGroupedFilesPopover from "@/components/manage-grouped-files-popover";
+import ManageGroupedFilesDialog from "@/components/manage-grouped-files-dialog";
 import Image from "next/image";
 import { SvgIcon } from "@/components/svg-icon";
 import {
@@ -117,6 +117,12 @@ type Document = {
   forceMajeureClause: 'Disputed' | 'Not Disputed' | 'Somewhat Disputed';
   assignmentProvisionSummary: string;
   groupedCount?: number;
+  // Folder support
+  isFolder?: boolean;
+  isExpanded?: boolean;
+  parentFolderId?: number;
+  childFileIds?: number[];
+  originalFolderId?: string;
 };
 
 interface SelectedFile {
@@ -260,8 +266,8 @@ export default function ReviewArtifactPanel({
   const [iManageDialogOpen, setIManageDialogOpen] = React.useState(false);
   const [tableData, setTableData] = React.useState<Document[]>([]);
   const [manageGroupedFilesRowId, setManageGroupedFilesRowId] = React.useState<number | null>(null);
-  const [manageGroupedFilesAnchor, setManageGroupedFilesAnchor] = React.useState<HTMLElement | null>(null);
   const [addColumnPopoverOpen, setAddColumnPopoverOpen] = React.useState(false);
+  const [expandedFolders, setExpandedFolders] = React.useState<Set<number>>(new Set());
   const fileColumnRef = React.useRef<HTMLTableCellElement>(null);
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
   const [addColumnPopoverPosition, setAddColumnPopoverPosition] = React.useState({ top: 0, left: 0 });
@@ -271,8 +277,8 @@ export default function ReviewArtifactPanel({
   const groupingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const [groupingOverlayDimensions, setGroupingOverlayDimensions] = React.useState({ width: 0, height: 0, left: 0, top: 0 });
   
-  // Grouping acceptance state
-  const [pendingGroupRowId, setPendingGroupRowId] = React.useState<number | null>(null);
+  // Grouping acceptance state - tracks all rows pending acceptance
+  const [pendingGroupRowIds, setPendingGroupRowIds] = React.useState<Set<number>>(new Set());
   const preGroupingDataRef = React.useRef<Document[] | null>(null);
   
   // Add column popover state
@@ -552,17 +558,108 @@ export default function ReviewArtifactPanel({
       ];
     }
     
-    // Map selected files to Document format
-    return selectedFiles
-      .filter(file => file.type === 'file') // Only include actual files, not folders
-      .map((file, index) => ({
-        id: index + 1,
-        selected: false,
-        fileName: file.name,
-        agreementParties: 'Processing...',
-        forceMajeureClause: 'Not Disputed' as const,
-        assignmentProvisionSummary: 'Analyzing document...',
-      }));
+    // First pass: create folder id map and collect folder names
+    const folders = selectedFiles.filter(file => file.type === 'folder');
+    const folderIdMap = new Map<string, number>();
+    const folderChildrenMap = new Map<number, number[]>();
+    
+    let currentId = 1;
+    
+    // Pre-assign IDs to folders
+    folders.forEach((folder) => {
+      const folderId = currentId++;
+      folderIdMap.set(folder.name, folderId);
+      folderChildrenMap.set(folderId, []);
+    });
+    
+    // Calculate how many IDs to reserve for folders
+    const folderCount = folders.length;
+    currentId = folderCount + 1;
+    
+    // Pre-process files to determine parent folder relationships
+    const fileParentMap = new Map<string, number>();
+    selectedFiles.filter(file => file.type === 'file').forEach((file) => {
+      for (const folder of folders) {
+        if (file.path.includes(folder.name)) {
+          const parentFolderId = folderIdMap.get(folder.name);
+          if (parentFolderId !== undefined) {
+            fileParentMap.set(file.id, parentFolderId);
+          }
+          break;
+        }
+      }
+    });
+    
+    const result: Document[] = [];
+    let fileRowNumber = 1; // Track file row numbers separately
+    currentId = 1;
+    
+    // Process in original order, but insert child files right after their parent folders
+    const processedFolders = new Set<string>();
+    
+    selectedFiles.forEach((item) => {
+      if (item.type === 'folder') {
+        // Add folder row
+        const folderId = folderIdMap.get(item.name)!;
+        result.push({
+          id: folderId,
+          selected: false,
+          fileName: item.name,
+          agreementParties: '',
+          forceMajeureClause: 'Not Disputed' as const,
+          assignmentProvisionSummary: '',
+          isFolder: true,
+          isExpanded: false,
+          originalFolderId: item.id,
+          childFileIds: [],
+        });
+        processedFolders.add(item.name);
+        
+        // Now add all child files of this folder right after
+        const childFiles = selectedFiles.filter(f => 
+          f.type === 'file' && fileParentMap.get(f.id) === folderId
+        );
+        
+        childFiles.forEach((childFile) => {
+          const fileId = folderCount + fileRowNumber;
+          fileRowNumber++;
+          
+          // Update folder's childFileIds
+          const folderRow = result.find(r => r.id === folderId);
+          if (folderRow && folderRow.childFileIds) {
+            folderRow.childFileIds.push(fileId);
+          }
+          
+          result.push({
+            id: fileId,
+            selected: false,
+            fileName: childFile.name,
+            agreementParties: 'Processing...',
+            forceMajeureClause: 'Not Disputed' as const,
+            assignmentProvisionSummary: 'Analyzing document...',
+            parentFolderId: folderId,
+          });
+        });
+      } else {
+        // Only add file if it doesn't have a parent folder (standalone file)
+        const parentFolderId = fileParentMap.get(item.id);
+        if (parentFolderId === undefined) {
+          const fileId = folderCount + fileRowNumber;
+          fileRowNumber++;
+          
+          result.push({
+            id: fileId,
+            selected: false,
+            fileName: item.name,
+            agreementParties: 'Processing...',
+            forceMajeureClause: 'Not Disputed' as const,
+            assignmentProvisionSummary: 'Analyzing document...',
+          });
+        }
+      }
+    });
+    
+    return result;
   }, [selectedFiles]);
 
   // Update tableData when initialData changes
@@ -573,11 +670,22 @@ export default function ReviewArtifactPanel({
   // Active filters state
   const [activeFilters, setActiveFilters] = React.useState<ActiveFilter[]>([]);
   
-  // Filter the data based on active filters
+  // Filter the data based on active filters and folder expansion state
   const filteredData = React.useMemo(() => {
-    if (activeFilters.length === 0) return tableData;
+    // First apply folder visibility filter
+    const visibleData = tableData.filter(row => {
+      // Folders are always visible
+      if (row.isFolder) return true;
+      // Files without a parent folder are always visible
+      if (!row.parentFolderId) return true;
+      // Files with a parent folder are only visible if the folder is expanded
+      return expandedFolders.has(row.parentFolderId);
+    });
     
-    return tableData.filter(row => {
+    // Then apply active filters
+    if (activeFilters.length === 0) return visibleData;
+    
+    return visibleData.filter(row => {
       // Check each active filter
       return activeFilters.every(filter => {
         // Skip filters with no values selected (show all)
@@ -610,7 +718,7 @@ export default function ReviewArtifactPanel({
         }
       });
     });
-  }, [tableData, activeFilters]);
+  }, [tableData, activeFilters, expandedFolders]);
 
   const data = filteredData;
   
@@ -688,19 +796,81 @@ export default function ReviewArtifactPanel({
     setSelectedRows(new Set());
   }, []);
   
-  // Handle accepting the grouped files
+  // Toggle folder expansion
+  const toggleFolderExpansion = React.useCallback((folderId: number) => {
+    setExpandedFolders(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(folderId)) {
+        newSet.delete(folderId);
+      } else {
+        newSet.add(folderId);
+      }
+      return newSet;
+    });
+  }, []);
+  
+  // Handle accepting a single grouped row
+  const handleAcceptGroupingRow = React.useCallback((rowId: number) => {
+    setPendingGroupRowIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(rowId);
+      return newSet;
+    });
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(rowId);
+      return newSet;
+    });
+    // Clear hover state so action bar disappears until re-hover
+    setHoveredRow(null);
+  }, []);
+  
+  // Handle rejecting a single grouped row - revert just that row
+  const handleRejectGroupingRow = React.useCallback((rowId: number) => {
+    if (preGroupingDataRef.current) {
+      const originalRow = preGroupingDataRef.current.find(r => r.id === rowId);
+      if (originalRow) {
+        // Find the original children too
+        const originalChildren = preGroupingDataRef.current.filter(r => r.parentFolderId === rowId);
+        setTableData(prev => {
+          // Remove the current grouped row
+          const filtered = prev.filter(r => r.id !== rowId);
+          // Find where to insert the original folder and children
+          const insertIndex = prev.findIndex(r => r.id === rowId);
+          // Insert original row and children at the correct position
+          const result = [...filtered];
+          result.splice(insertIndex >= 0 ? insertIndex : result.length, 0, originalRow, ...originalChildren);
+          return result;
+        });
+      }
+    }
+    setPendingGroupRowIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(rowId);
+      return newSet;
+    });
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(rowId);
+      return newSet;
+    });
+    // Clear hover state so action bar disappears until re-hover
+    setHoveredRow(null);
+  }, []);
+  
+  // Handle accepting all grouped files
   const handleAcceptGrouping = React.useCallback(() => {
-    setPendingGroupRowId(null);
+    setPendingGroupRowIds(new Set());
     preGroupingDataRef.current = null;
     setSelectedRows(new Set());
   }, []);
   
-  // Handle rejecting the grouped files - revert to original data
+  // Handle rejecting all grouped files - revert to original data
   const handleRejectGrouping = React.useCallback(() => {
     if (preGroupingDataRef.current) {
       setTableData(preGroupingDataRef.current);
     }
-    setPendingGroupRowId(null);
+    setPendingGroupRowIds(new Set());
     preGroupingDataRef.current = null;
     setSelectedRows(new Set());
   }, []);
@@ -719,36 +889,89 @@ export default function ReviewArtifactPanel({
       clearTimeout(groupingTimeoutRef.current);
     }
     
-    // After 10 seconds, stop the grouping animation and group ValarAI files
+    // After 10 seconds, stop the grouping animation and perform grouping
     groupingTimeoutRef.current = setTimeout(() => {
       setIsGroupingFiles(false);
       
-      // Find all files that start with "ValarAI_" and group them
       const currentData = preGroupingDataRef.current || tableData;
-      const valarAIFiles = currentData.filter(row => row.fileName.startsWith('ValarAI_'));
+      const result: Document[] = [];
+      const processedIds = new Set<number>();
+      const pendingIds = new Set<number>();
       
-      if (valarAIFiles.length <= 1) {
-        // Nothing to group
-        return;
+      // Process each row
+      currentData.forEach(row => {
+        // Skip if already processed (e.g., child files of a folder)
+        if (processedIds.has(row.id)) return;
+        
+        // Handle folders - transform into grouped file rows
+        if (row.isFolder && row.childFileIds && row.childFileIds.length > 0) {
+          const childCount = row.childFileIds.length;
+          
+          // Mark child files as processed so they don't appear separately
+          row.childFileIds.forEach(childId => processedIds.add(childId));
+          
+          // Transform folder into grouped file row
+          const groupedRow: Document = {
+            ...row,
+            isFolder: false, // No longer a folder
+            isExpanded: undefined,
+            childFileIds: undefined,
+            parentFolderId: undefined,
+            groupedCount: childCount, // Number of files in the folder
+          };
+          
+          result.push(groupedRow);
+          processedIds.add(row.id);
+          pendingIds.add(row.id);
+        } else if (row.isFolder) {
+          // Empty folder - just keep it as is but not as a folder
+          result.push({
+            ...row,
+            isFolder: false,
+            isExpanded: undefined,
+            childFileIds: undefined,
+          });
+          processedIds.add(row.id);
+        } else if (!row.parentFolderId) {
+          // Standalone files (not children of folders) - keep as is
+          result.push(row);
+          processedIds.add(row.id);
+        }
+        // Child files with parentFolderId are skipped (they're grouped into the folder)
+      });
+      
+      // Also handle ValarAI files grouping (original behavior)
+      const valarAIFiles = result.filter(row => row.fileName.startsWith('ValarAI_'));
+      if (valarAIFiles.length > 1) {
+        const firstValarAI = valarAIFiles[0];
+        const groupedCount = valarAIFiles.length - 1;
+        
+        // Create the grouped row
+        const groupedRow = {
+          ...firstValarAI,
+          groupedCount: (firstValarAI.groupedCount || 0) + groupedCount
+        };
+        
+        // Replace valarAI files with the grouped one
+        const finalResult = result.filter(row => !row.fileName.startsWith('ValarAI_'));
+        finalResult.unshift(groupedRow);
+        
+        // Add ValarAI grouped row to pending
+        pendingIds.add(firstValarAI.id);
+        
+        setTableData(finalResult);
+      } else {
+        setTableData(result);
       }
       
-      // Keep the first ValarAI file and add grouped count
-      const firstValarAI = valarAIFiles[0];
-      const groupedCount = valarAIFiles.length - 1;
+      // Clear expanded folders since folders are now grouped
+      setExpandedFolders(new Set());
       
-      // Create the grouped row
-      const groupedRow = {
-        ...firstValarAI,
-        groupedCount: (firstValarAI.groupedCount || 0) + groupedCount
-      };
-      
-      // Get all non-ValarAI files
-      const otherFiles = currentData.filter(row => !row.fileName.startsWith('ValarAI_'));
-      
-      // Update all states separately
-      setTableData([groupedRow, ...otherFiles]);
-      setPendingGroupRowId(firstValarAI.id);
-      setSelectedRows(new Set([firstValarAI.id]));
+      // Select all grouped rows and mark them as pending acceptance
+      if (pendingIds.size > 0) {
+        setPendingGroupRowIds(pendingIds);
+        setSelectedRows(pendingIds); // Select ALL grouped rows
+      }
     }, 10000);
   }, [isGroupingFiles, tableData]);
   
@@ -801,7 +1024,46 @@ export default function ReviewArtifactPanel({
       cell: ({ row }) => {
         const isSelected = selectedRows.has(row.original.id);
         const isHovered = hoveredRow === row.original.id;
+        const isFolder = row.original.isFolder;
+        const isFolderExpanded = expandedFolders.has(row.original.id);
         const showCheckbox = isSelected || isHovered;
+        
+        // For folder rows: show chevron or checkbox on hover
+        if (isFolder) {
+          return (
+            <div 
+              className='flex justify-center h-full items-center'
+              onClick={(e) => e.stopPropagation()}
+            >
+              {showCheckbox ? (
+                <input
+                  type='checkbox'
+                  className='custom-checkbox'
+                  checked={isSelected}
+                  onChange={() => toggleRowSelection(row.original.id)}
+                />
+              ) : (
+                <button
+                  onClick={() => toggleFolderExpansion(row.original.id)}
+                  className="flex items-center justify-center w-5 h-5 hover:bg-bg-subtle rounded transition-colors"
+                >
+                  {isFolderExpanded ? (
+                    <ChevronDown size={14} className="text-fg-muted" />
+                  ) : (
+                    <ChevronRight size={14} className="text-fg-muted" />
+                  )}
+                </button>
+              )}
+            </div>
+          );
+        }
+        
+        // For file rows: show row number or checkbox
+        // Calculate file row number (excluding folder rows)
+        const fileRowNumber = data
+          .slice(0, row.index + 1)
+          .filter(r => !r.isFolder)
+          .length;
         
         return (
           <div className='flex justify-center h-full items-center'>
@@ -813,7 +1075,7 @@ export default function ReviewArtifactPanel({
                 onChange={() => toggleRowSelection(row.original.id)}
               />
             ) : (
-              <span className="text-fg-muted">{row.index + 1}</span>
+              <span className="text-fg-muted">{fileRowNumber}</span>
             )}
           </div>
         );
@@ -832,10 +1094,31 @@ export default function ReviewArtifactPanel({
       cell: ({ row }) => {
         const isHovered = hoveredRow === row.original.id;
         const hasGroupedFiles = row.original.groupedCount && row.original.groupedCount > 0;
-        const isPendingAcceptance = pendingGroupRowId === row.original.id;
+        const isPendingAcceptance = pendingGroupRowIds.has(row.original.id);
+        const isFolder = row.original.isFolder;
+        const isChildFile = row.original.parentFolderId !== undefined;
         
+        // For folder rows
+        if (isFolder) {
+          return (
+            <div className='flex items-center gap-1.5 relative'>
+              <div className='flex items-center gap-1.5 flex-1 min-w-0'>
+                <Image 
+                  src="/folderIcon.svg" 
+                  alt="Folder" 
+                  width={14} 
+                  height={14} 
+                  className="flex-shrink-0" 
+                />
+                <span className='truncate text-fg-base font-medium'>{row.original.fileName}</span>
+              </div>
+            </div>
+          );
+        }
+        
+        // For file rows (with optional indentation for child files)
         return (
-          <div className='flex items-center gap-1.5 relative'>
+          <div className={`flex items-center gap-1.5 relative w-full ${isChildFile ? 'pl-4' : ''}`}>
             <div className={`flex items-center gap-1.5 ${hasGroupedFiles ? 'text-ui-violet-fg' : 'flex-1 min-w-0'}`}>
               {hasGroupedFiles ? (
                 <SvgIcon 
@@ -863,19 +1146,48 @@ export default function ReviewArtifactPanel({
               </span>
             )}
             
-            {/* Hover Control Bar */}
-            {isHovered && !isPendingAcceptance && (
+            {/* Hover Control Bar - Accept/Reject for pending, normal actions otherwise */}
+            {isPendingAcceptance ? (
               <div 
-                className='absolute right-0 flex items-center gap-0.5 bg-bg-base rounded-md p-0.5 shadow-md border border-border-base'
+                className='absolute flex items-center gap-0.5 bg-bg-base rounded-md p-0.5 shadow-md border border-border-base'
+                style={{ right: '-10px' }}
+              >
+                {/* Reject button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRejectGroupingRow(row.original.id);
+                  }}
+                  className='p-1.5 hover:bg-bg-subtle rounded transition-colors text-fg-subtle hover:text-fg-base'
+                  title="Reject grouping"
+                >
+                  <X size={12} />
+                </button>
+                
+                {/* Accept button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAcceptGroupingRow(row.original.id);
+                  }}
+                  className='p-1.5 hover:bg-bg-subtle rounded transition-colors text-fg-subtle hover:text-fg-base'
+                  title="Accept grouping"
+                >
+                  <Check size={12} />
+                </button>
+              </div>
+            ) : isHovered && (
+              <div 
+                className='absolute flex items-center gap-0.5 bg-bg-base rounded-md p-0.5 shadow-md border border-border-base'
+                style={{ right: '-10px' }}
               >
                   {/* Create group or Manage grouped files button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       if (hasGroupedFiles) {
-                        // Open manage grouped files popover
+                        // Open manage grouped files dialog
                         setManageGroupedFilesRowId(row.original.id);
-                        setManageGroupedFilesAnchor(e.currentTarget.closest('td'));
                       } else {
                         // Select the row checkbox
                         toggleRowSelection(row.original.id);
@@ -884,7 +1196,7 @@ export default function ReviewArtifactPanel({
                     className='p-1.5 hover:bg-bg-subtle rounded transition-colors text-fg-subtle'
                     title={hasGroupedFiles ? 'Manage grouped files' : 'Create group'}
                   >
-                    <Layers size={14} />
+                    <Layers size={12} />
                   </button>
                   
                   {/* Assign button */}
@@ -896,7 +1208,7 @@ export default function ReviewArtifactPanel({
                     className='p-1.5 hover:bg-bg-subtle rounded transition-colors text-fg-subtle'
                     title="Assign"
                   >
-                    <UserPlus size={14} />
+                    <UserPlus size={12} />
                   </button>
                 </div>
             )}
@@ -904,7 +1216,7 @@ export default function ReviewArtifactPanel({
         );
       },
     }),
-  ], [isAllSelected, toggleSelectAll, selectedRows, hoveredRow, toggleRowSelection, pendingGroupRowId]);
+  ], [isAllSelected, toggleSelectAll, selectedRows, hoveredRow, toggleRowSelection, pendingGroupRowIds, expandedFolders, toggleFolderExpansion, data]);
   
   // Define query columns (only shown when query has been run)
   const queryColumns = React.useMemo(() => [
@@ -1620,13 +1932,15 @@ export default function ReviewArtifactPanel({
                 {table.getRowModel().rows.map((row) => {
                   const isRowSelected = selectedRows.has(row.original.id);
                   const isRowHovered = hoveredRow === row.original.id;
-                  const isPendingAcceptanceRow = pendingGroupRowId === row.original.id;
+                  const isPendingAcceptanceRow = pendingGroupRowIds.has(row.original.id);
+                  const isFolder = row.original.isFolder;
                   return (
                     <tr 
                       key={row.id}
                       onMouseEnter={() => setHoveredRow(row.original.id)}
                       onMouseLeave={() => setHoveredRow(null)}
-                      className="transition-colors relative"
+                      onClick={isFolder ? () => toggleFolderExpansion(row.original.id) : undefined}
+                      className={`transition-colors relative ${isFolder ? 'cursor-pointer' : ''}`}
                     >
                       {row.getVisibleCells().map((cell, cellIndex) => {
                         const cellPadding =
@@ -1638,7 +1952,7 @@ export default function ReviewArtifactPanel({
                         return (
                         <td
                           key={cell.id}
-                          className={`${cellPadding} h-8 ${isRowSelected ? 'bg-bg-base-hover' : isRowHovered ? 'bg-bg-base-hover' : 'bg-bg-base'} ${cell.column.id === 'forceMajeureClause' ? 'w-[325px]' : ''} ${cell.column.id === 'agreementParties' ? 'w-[325px]' : ''} ${cell.column.id === 'assignmentProvisionSummary' ? 'w-[325px]' : ''} ${cell.column.id !== table.getAllColumns()[0].id ? 'border-l border-border-base' : ''} ${isLastCell ? 'border-r border-border-base' : ''} border-b border-border-base relative ${shouldExtendBorder ? 'extend-border-line' : 'overflow-hidden'} ${isSelectColumn ? 'cursor-pointer' : ''}`}
+                          className={`${cellPadding} h-8 ${isRowSelected ? 'bg-bg-base-hover' : isRowHovered ? 'bg-bg-base-hover' : 'bg-bg-base'} ${cell.column.id === 'forceMajeureClause' ? 'w-[325px]' : ''} ${cell.column.id === 'agreementParties' ? 'w-[325px]' : ''} ${cell.column.id === 'assignmentProvisionSummary' ? 'w-[325px]' : ''} ${cell.column.id !== table.getAllColumns()[0].id ? 'border-l border-border-base' : ''} ${isLastCell ? 'border-r border-border-base' : ''} border-b border-border-base relative ${shouldExtendBorder ? 'extend-border-line' : cell.column.id === 'fileName' ? '' : 'overflow-hidden'} ${isSelectColumn ? 'cursor-pointer' : ''}`}
                           style={{ 
                             fontSize: '12px', 
                             lineHeight: '16px',
@@ -1646,22 +1960,12 @@ export default function ReviewArtifactPanel({
                             width: cell.column.getSize()
                           }}
                         >
-                          {/* Active border overlay for fileName cell */}
-                          {cell.column.id === 'fileName' && manageGroupedFilesRowId === row.original.id && (
-                            <div 
-                              className="absolute inset-0 pointer-events-none border-border-interactive rounded-md"
-                              style={{ 
-                                border: '1.5px solid',
-                                borderRadius: '6px'
-                              }}
-                            />
-                          )}
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
                           )}
                           {/* Hover detection area extending to the right for files-only mode */}
-                          {shouldExtendBorder && !isPendingAcceptanceRow && (
+                          {shouldExtendBorder && (
                             <div 
                               className="absolute top-0 bottom-0 cursor-default"
                               style={{ 
@@ -1682,33 +1986,6 @@ export default function ReviewArtifactPanel({
             </table>
               </div>
               
-              {/* Pending Acceptance Buttons - fixed to right side of first row */}
-              {pendingGroupRowId !== null && (
-                <div 
-                  className="absolute flex items-center justify-end gap-2 px-3"
-                  style={{ 
-                    top: '32px', // Header height - aligns with first data row
-                    right: '0',
-                    height: '32px', // Match row height exactly
-                    zIndex: 40
-                  }}
-                >
-                  <SmallButton
-                    variant="secondary"
-                    onClick={handleRejectGrouping}
-                    icon={<X size={14} />}
-                  >
-                    Reject
-                  </SmallButton>
-                  <SmallButton
-                    variant="default"
-                    onClick={handleAcceptGrouping}
-                    icon={<Check size={14} />}
-                  >
-                    Accept
-                  </SmallButton>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -1744,27 +2021,21 @@ export default function ReviewArtifactPanel({
         onExport={() => console.log('Export')}
       />
       
-      {/* Manage Grouped Files Popover */}
-      {manageGroupedFilesRowId !== null && (
-        <ManageGroupedFilesPopover
-          isOpen={true}
-          onClose={() => {
-            setManageGroupedFilesRowId(null);
-            setManageGroupedFilesAnchor(null);
-          }}
-          anchorElement={manageGroupedFilesAnchor}
-          parentFileName={
-            data.find(row => row.id === manageGroupedFilesRowId)?.fileName || ''
-          }
-          groupedCount={
-            data.find(row => row.id === manageGroupedFilesRowId)?.groupedCount || 0
-          }
-          onRemoveFile={(index) => {
-            console.log('Remove file at index:', index);
-            // TODO: Implement remove file from group
-          }}
-        />
-      )}
+      {/* Manage Grouped Files Dialog */}
+      <ManageGroupedFilesDialog
+        isOpen={manageGroupedFilesRowId !== null}
+        onClose={() => setManageGroupedFilesRowId(null)}
+        parentFileName={
+          data.find(row => row.id === manageGroupedFilesRowId)?.fileName || ''
+        }
+        groupedCount={
+          data.find(row => row.id === manageGroupedFilesRowId)?.groupedCount || 0
+        }
+        onRemoveFile={(index) => {
+          console.log('Remove file at index:', index);
+          // TODO: Implement remove file from group
+        }}
+      />
       
       {/* Add Column Popover */}
       {addColumnPopoverOpen && (

@@ -119,29 +119,46 @@ const columns: ColumnDef<iManageFile>[] = [
   },
 ];
 
-// Mock data - define once
+// Mock data - define once (3 folders + 24 files = 27 total items)
 const mockFiles: iManageFile[] = [
+  // Folders
   { id: '1', name: 'Acme Corporation', type: 'folder', modifiedDate: '2024-01-15', path: 'My Matters/Acme Corporation' },
   { id: '2', name: 'GlobalTech Inc', type: 'folder', modifiedDate: '2024-01-10', path: 'My Matters/GlobalTech Inc' },
   { id: '3', name: 'Litigation', type: 'folder', modifiedDate: '2024-01-12', path: 'My Matters/Litigation' },
-  { id: '4', name: 'Echabarrai v. PPG Indus - Scheduling Order.pdf', type: 'file', modifiedDate: '2024-01-14', size: '1.2 MB', path: 'My Matters/Litigation/Echabarrai' },
-  { id: '5', name: 'Schnupp v. Blair Pharmacy - Opinion.pdf', type: 'file', modifiedDate: '2024-01-13', size: '3.4 MB', path: 'My Matters/Litigation/Schnupp' },
-  { id: '6', name: 'Unicorn Capital _ Nkomati claims management.docx', type: 'file', modifiedDate: '2024-01-12', size: '856 KB', path: 'My Matters/Unicorn Capital' },
-  { id: '7', name: 'C05763098.pdf', type: 'file', modifiedDate: '2024-01-11', size: '2.1 MB', path: 'My Matters/GlobalTech Inc/Documents' },
-  { id: '8', name: 'Contract_Draft_v3.docx', type: 'file', modifiedDate: '2024-01-14', size: '2.3 MB', path: 'My Matters/Acme Corporation/Contracts' },
-  { id: '9', name: 'Due_Diligence_Report.pdf', type: 'file', modifiedDate: '2024-01-12', size: '5.1 MB', path: 'My Matters/GlobalTech Inc/Due Diligence' },
-  { id: '10', name: 'Meeting_Notes_Jan.docx', type: 'file', modifiedDate: '2024-01-08', size: '345 KB', path: 'My Matters/Acme Corporation/Notes' },
-  { id: '11', name: 'ValarAI_Series_F_Financing.pdf', type: 'file', modifiedDate: '2024-11-28', size: '4.8 MB', path: 'My Matters/ValarAI/Financing' },
-  { id: '17', name: 'ValarAI_Business_Plan_2024.pdf', type: 'file', modifiedDate: '2024-11-25', size: '3.2 MB', path: 'My Matters/ValarAI/Strategic' },
-  { id: '18', name: 'ValarAI_Financial_Statements_Q3_2024.xlsx', type: 'file', modifiedDate: '2024-11-20', size: '2.1 MB', path: 'My Matters/ValarAI/Financials' },
-  { id: '19', name: 'ValarAI_Competitive_Analysis.docx', type: 'file', modifiedDate: '2024-11-15', size: '1.7 MB', path: 'My Matters/ValarAI/Strategic' },
-  { id: '20', name: 'ValarAI_Technology_Risk_Assessment.pdf', type: 'file', modifiedDate: '2024-11-10', size: '2.4 MB', path: 'My Matters/ValarAI/Risk' },
-  { id: '21', name: 'ValarAI_Regulatory_Compliance_Review.pdf', type: 'file', modifiedDate: '2024-11-05', size: '1.9 MB', path: 'My Matters/ValarAI/Compliance' },
-  { id: '12', name: 'Settlement_Agreement_Final.pdf', type: 'file', modifiedDate: '2024-01-07', size: '1.8 MB', path: 'My Matters/Litigation/Settlements' },
-  { id: '13', name: 'Patent_Application_2024.pdf', type: 'file', modifiedDate: '2024-01-06', size: '4.2 MB', path: 'My Matters/GlobalTech Inc/Patents' },
-  { id: '14', name: 'Board_Resolution_Q1.docx', type: 'file', modifiedDate: '2024-01-05', size: '567 KB', path: 'My Matters/Acme Corporation/Corporate' },
-  { id: '15', name: 'Compliance_Review_2024.xlsx', type: 'file', modifiedDate: '2024-01-04', size: '890 KB', path: 'My Matters/Compliance' },
-  { id: '16', name: 'Merger_Agreement_Draft.pdf', type: 'file', modifiedDate: '2024-01-03', size: '3.2 MB', path: 'My Matters/M&A/Unicorn Capital' }
+  
+  // Acme Corporation files
+  { id: '4', name: 'Acme_Master_Services_Agreement_2024.pdf', type: 'file', modifiedDate: '2024-01-14', size: '2.3 MB', path: 'My Matters/Acme Corporation/Contracts' },
+  { id: '5', name: 'Acme_Board_Resolution_Q1_2024.docx', type: 'file', modifiedDate: '2024-01-12', size: '567 KB', path: 'My Matters/Acme Corporation/Corporate' },
+  { id: '6', name: 'Acme_NDA_Template_Signed.pdf', type: 'file', modifiedDate: '2024-01-10', size: '890 KB', path: 'My Matters/Acme Corporation/Contracts' },
+  { id: '7', name: 'Acme_Shareholder_Meeting_Notes.docx', type: 'file', modifiedDate: '2024-01-08', size: '345 KB', path: 'My Matters/Acme Corporation/Notes' },
+  
+  // GlobalTech Inc files
+  { id: '8', name: 'GlobalTech_Patent_Application_2024.pdf', type: 'file', modifiedDate: '2024-01-13', size: '4.2 MB', path: 'My Matters/GlobalTech Inc/Patents' },
+  { id: '9', name: 'GlobalTech_Due_Diligence_Report.pdf', type: 'file', modifiedDate: '2024-01-11', size: '5.1 MB', path: 'My Matters/GlobalTech Inc/Due Diligence' },
+  { id: '10', name: 'GlobalTech_Series_C_Term_Sheet.pdf', type: 'file', modifiedDate: '2024-01-09', size: '2.1 MB', path: 'My Matters/GlobalTech Inc/Financing' },
+  { id: '11', name: 'GlobalTech_IP_Assignment_Agreement.docx', type: 'file', modifiedDate: '2024-01-07', size: '1.8 MB', path: 'My Matters/GlobalTech Inc/IP' },
+  
+  // Litigation files
+  { id: '12', name: 'Echabarrai v. PPG Industries - Scheduling Order.pdf', type: 'file', modifiedDate: '2024-01-14', size: '1.2 MB', path: 'My Matters/Litigation/Echabarrai' },
+  { id: '13', name: 'Schnupp v. Blair Pharmacy - Court Opinion.pdf', type: 'file', modifiedDate: '2024-01-12', size: '3.4 MB', path: 'My Matters/Litigation/Schnupp' },
+  { id: '14', name: 'Morrison v. TechCorp - Settlement Agreement.pdf', type: 'file', modifiedDate: '2024-01-10', size: '1.8 MB', path: 'My Matters/Litigation/Morrison' },
+  { id: '15', name: 'Jenkins v. Pharma Inc - Deposition Transcript.pdf', type: 'file', modifiedDate: '2024-01-08', size: '4.5 MB', path: 'My Matters/Litigation/Jenkins' },
+  
+  // Random standalone files (not in any folder)
+  { id: '16', name: 'Unicorn Capital - Nkomati Claims Management.docx', type: 'file', modifiedDate: '2024-01-06', size: '856 KB', path: 'My Matters/Unicorn Capital' },
+  { id: '17', name: 'Compliance_Review_2024.xlsx', type: 'file', modifiedDate: '2024-01-04', size: '890 KB', path: 'My Matters/Compliance' },
+  { id: '18', name: 'Merger_Agreement_Draft_Confidential.pdf', type: 'file', modifiedDate: '2024-01-03', size: '3.2 MB', path: 'My Matters/M&A' },
+  { id: '19', name: 'SEC_Filing_10-K_2023.pdf', type: 'file', modifiedDate: '2024-01-02', size: '5.8 MB', path: 'My Matters/SEC Filings' },
+  { id: '20', name: 'Employment_Agreement_Template.docx', type: 'file', modifiedDate: '2024-01-01', size: '445 KB', path: 'My Matters/Templates' },
+  { id: '21', name: 'Q4_2023_Financial_Summary.xlsx', type: 'file', modifiedDate: '2023-12-28', size: '1.2 MB', path: 'My Matters/Financials' },
+  
+  // Standalone ValarAI files (for grouping demo)
+  { id: '22', name: 'ValarAI_Series_F_Financing.pdf', type: 'file', modifiedDate: '2024-11-28', size: '4.8 MB', path: 'My Matters/ValarAI/Financing' },
+  { id: '23', name: 'ValarAI_Business_Plan_2024.pdf', type: 'file', modifiedDate: '2024-11-25', size: '3.2 MB', path: 'My Matters/ValarAI/Strategic' },
+  { id: '24', name: 'ValarAI_Financial_Statements_Q3.xlsx', type: 'file', modifiedDate: '2024-11-20', size: '2.1 MB', path: 'My Matters/ValarAI/Financials' },
+  { id: '25', name: 'ValarAI_Competitive_Analysis.docx', type: 'file', modifiedDate: '2024-11-15', size: '1.7 MB', path: 'My Matters/ValarAI/Strategic' },
+  { id: '26', name: 'ValarAI_Technology_Risk_Assessment.pdf', type: 'file', modifiedDate: '2024-11-10', size: '2.4 MB', path: 'My Matters/ValarAI/Risk' },
+  { id: '27', name: 'ValarAI_Regulatory_Compliance_Review.pdf', type: 'file', modifiedDate: '2024-11-05', size: '1.9 MB', path: 'My Matters/ValarAI/Compliance' },
 ];
 
 export default function IManageFilePickerDialog({ 
