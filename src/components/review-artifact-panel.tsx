@@ -19,6 +19,8 @@ import ExportReviewDialog from "@/components/export-review-dialog";
 import IManageFilePickerDialog from "@/components/imanage-file-picker-dialog";
 import ReviewTableActionBar from "@/components/review-table-action-bar";
 import ManageGroupedFilesDialog from "@/components/manage-grouped-files-dialog";
+import ReviewTableViewBar, { View } from "@/components/review-table-view-bar";
+import CreateViewDialog from "@/components/create-view-dialog";
 import Image from "next/image";
 import { SvgIcon } from "@/components/svg-icon";
 import {
@@ -289,6 +291,18 @@ export default function ReviewArtifactPanel({
   const typingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const [selectedModel, setSelectedModel] = React.useState('auto');
   const [modelDropdownOpen, setModelDropdownOpen] = React.useState(false);
+  
+  // View bar state
+  const [views, setViews] = React.useState<View[]>([
+    { id: 'all', name: 'All', isDefault: true }
+  ]);
+  const [activeViewId, setActiveViewId] = React.useState('all');
+  const [createViewDialogOpen, setCreateViewDialogOpen] = React.useState(false);
+  
+  // Filters per view - stored as a ref to avoid re-renders when switching views
+  const viewFiltersRef = React.useRef<Record<string, ActiveFilter[]>>({
+    'all': []
+  });
   
   // Dynamic columns state - only stores structure, not data
   interface DynamicColumn {
@@ -669,6 +683,39 @@ export default function ReviewArtifactPanel({
 
   // Active filters state
   const [activeFilters, setActiveFilters] = React.useState<ActiveFilter[]>([]);
+  
+  // Handle switching views - load filters for the selected view
+  const handleViewChange = React.useCallback((viewId: string) => {
+    // Save current filters to the current view before switching
+    viewFiltersRef.current[activeViewId] = activeFilters;
+    
+    // Switch to the new view
+    setActiveViewId(viewId);
+    
+    // Load filters for the new view
+    const viewFilters = viewFiltersRef.current[viewId] || [];
+    setActiveFilters(viewFilters);
+  }, [activeViewId, activeFilters]);
+  
+  // Handle creating a new view
+  const handleCreateView = React.useCallback((name: string) => {
+    const newView: View = {
+      id: `view-${Date.now()}`,
+      name,
+      isDefault: false
+    };
+    
+    // Initialize empty filters for the new view
+    viewFiltersRef.current[newView.id] = [];
+    
+    setViews(prev => [...prev, newView]);
+    
+    // Save current filters before switching
+    viewFiltersRef.current[activeViewId] = activeFilters;
+    
+    setActiveViewId(newView.id);
+    setActiveFilters([]); // New view starts with no filters
+  }, [activeViewId, activeFilters]);
   
   // Filter the data based on active filters and folder expansion state
   const filteredData = React.useMemo(() => {
@@ -1622,11 +1669,14 @@ export default function ReviewArtifactPanel({
               return reordered;
             });
           }}
+          activeFilters={activeFilters}
           onFiltersChange={setActiveFilters}
         />
         
         {/* Content Area */}
-        <div className="flex-1 min-w-0 bg-bg-base" style={{ minHeight: 0 }}>
+        <div className="flex-1 min-w-0 bg-bg-base flex flex-col" style={{ minHeight: 0 }}>
+          {/* Table Area */}
+          <div className="flex-1 min-w-0 bg-bg-base" style={{ minHeight: 0 }}>
           {isEmpty ? (
             /* Empty State */
             <div className="h-full relative bg-bg-base overflow-auto">
@@ -1988,6 +2038,15 @@ export default function ReviewArtifactPanel({
               
             </div>
           )}
+          </div>
+          
+          {/* View Bar - Fixed to bottom */}
+          <ReviewTableViewBar
+            views={views}
+            activeViewId={activeViewId}
+            onViewChange={handleViewChange}
+            onAddView={() => setCreateViewDialogOpen(true)}
+          />
         </div>
       </motion.div>
 
@@ -2035,6 +2094,13 @@ export default function ReviewArtifactPanel({
           console.log('Remove file at index:', index);
           // TODO: Implement remove file from group
         }}
+      />
+      
+      {/* Create View Dialog */}
+      <CreateViewDialog
+        isOpen={createViewDialogOpen}
+        onClose={() => setCreateViewDialogOpen(false)}
+        onCreateView={handleCreateView}
       />
       
       {/* Add Column Popover */}

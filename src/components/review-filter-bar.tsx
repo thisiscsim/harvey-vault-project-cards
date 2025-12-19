@@ -13,7 +13,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
-import { ChevronRight } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -461,6 +460,7 @@ interface ReviewFilterBarProps {
   columns?: FilterableColumn[];
   onColumnFilter?: (columnId: string) => void;
   onFiltersChange?: (filters: ActiveFilter[]) => void;
+  activeFilters?: ActiveFilter[];
   hasFilters?: boolean;
   displayColumns?: DisplayColumn[];
   onToggleColumnVisibility?: (columnId: string) => void;
@@ -472,6 +472,7 @@ export default function ReviewFilterBar({
   columns = [],
   onColumnFilter,
   onFiltersChange,
+  activeFilters: controlledActiveFilters,
   hasFilters = false,
   displayColumns = [],
   onToggleColumnVisibility,
@@ -479,7 +480,15 @@ export default function ReviewFilterBar({
 }: ReviewFilterBarProps) {
   const hasColumns = columns.length > 0;
   const hasDisplayColumns = displayColumns.length > 0;
-  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
+  const [internalActiveFilters, setInternalActiveFilters] = useState<ActiveFilter[]>([]);
+  
+  // Use controlled filters if provided, otherwise use internal state
+  const activeFilters = controlledActiveFilters ?? internalActiveFilters;
+  const setActiveFilters = (filters: ActiveFilter[] | ((prev: ActiveFilter[]) => ActiveFilter[])) => {
+    const newFilters = typeof filters === 'function' ? filters(activeFilters) : filters;
+    setInternalActiveFilters(newFilters);
+    onFiltersChange?.(newFilters);
+  };
   const [displayOptionsOpen, setDisplayOptionsOpen] = useState(false);
   const [columnSearchQuery, setColumnSearchQuery] = useState("");
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
@@ -623,14 +632,11 @@ export default function ReviewFilterBar({
                 {filteredColumns.length > 0 ? (
                   filteredColumns.map((column) => (
                     <DropdownMenuSub key={column.id}>
-                      <DropdownMenuSubTrigger className="flex items-center justify-between gap-2 px-2 py-2 text-xs rounded-[4px] w-full">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-fg-subtle shrink-0">
-                            {getColumnIcon(column.type)}
-                          </span>
-                          <span className="truncate">{column.header}</span>
-                        </div>
-                        <ChevronRight size={14} className="text-fg-muted shrink-0" />
+                      <DropdownMenuSubTrigger className="flex items-center gap-2 px-2 py-2 text-xs rounded-[4px] w-full">
+                        <span className="text-fg-subtle shrink-0">
+                          {getColumnIcon(column.type)}
+                        </span>
+                        <span className="truncate">{column.header}</span>
                       </DropdownMenuSubTrigger>
                       <DropdownMenuSubContent className="p-0 rounded-[6px]">
                         <ColumnFilterSubmenuContent
