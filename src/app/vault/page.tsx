@@ -33,10 +33,8 @@ export default function VaultPage() {
   }, [isCreateDialogOpen]);
 
   const handleCreateProject = () => {
-    // Generate a unique ID for the project
-    const projectId = Date.now().toString();
-    // Navigate to the new project page
-    router.push(`/vault/project/${projectId}?name=${encodeURIComponent(newProjectName || 'Untitled')}`);
+    // Navigate to the staging example page with the project name
+    router.push(`/staging-example?name=${encodeURIComponent(newProjectName || 'Untitled')}`);
     setIsCreateDialogOpen(false);
     setNewProjectName("");
     setNewProjectDescription("");

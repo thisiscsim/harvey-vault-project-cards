@@ -628,7 +628,7 @@ export default function StubhubIPOFilingPage() {
             <div className="flex items-center gap-2">
               <Button variant="outline" size="medium" className="gap-1.5">
                 <Briefcase className="h-4 w-4" />
-                Client matter
+                Matter
               </Button>
               <Button variant="outline" size="medium" className="gap-1.5">
                 <Users className="h-4 w-4" />
