@@ -16,6 +16,25 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+// Default grayscale color (not selectable, used as initial state)
+const defaultGrayColor = '#CCCAC6';
+
+// Color options for project cards (user can optionally select one)
+const colorOptions = [
+  { id: 'yellow', color: '#F59E0B', label: 'Yellow' },
+  { id: 'red', color: '#C17C76', label: 'Red' },
+  { id: 'blue', color: '#3B82F6', label: 'Blue' },
+  { id: 'teal', color: '#569197', label: 'Teal' },
+  { id: 'brown', color: '#92400E', label: 'Brown' },
+] as const;
+
+// Pattern options for project card backgrounds
+const patternOptions = [
+  { id: 'grid', src: '/accent_filters/Grid.svg', label: 'Grid' },
+  { id: 'circle', src: '/accent_filters/Circle.svg', label: 'Circle' },
+  { id: 'slice', src: '/accent_filters/Slice.svg', label: 'Slice' },
+] as const;
+
 export default function VaultPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("all");
@@ -23,6 +42,8 @@ export default function VaultPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedPattern, setSelectedPattern] = useState<string | null>(null);
   const projectNameInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus the project name input when dialog opens
@@ -38,6 +59,20 @@ export default function VaultPage() {
     setIsCreateDialogOpen(false);
     setNewProjectName("");
     setNewProjectDescription("");
+    setSelectedColor(null);
+    setSelectedPattern(null);
+  };
+
+  // Get the selected color value (defaults to gray when no selection)
+  const getSelectedColorValue = () => {
+    if (!selectedColor) return defaultGrayColor;
+    return colorOptions.find(c => c.id === selectedColor)?.color || defaultGrayColor;
+  };
+
+  // Get the selected pattern source
+  const getSelectedPatternSrc = () => {
+    if (!selectedPattern) return null;
+    return patternOptions.find(p => p.id === selectedPattern)?.src || null;
   };
 
   const projects = [
@@ -357,6 +392,52 @@ export default function VaultPage() {
                 <p className="text-sm text-fg-muted">
                   Describe what this vault should be used for
                 </p>
+
+                {/* Color Selector */}
+                <div className="flex items-center gap-2 mt-2">
+                  {colorOptions.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setSelectedColor(option.id)}
+                      className="w-4 h-4 rounded-full transition-all flex items-center justify-center hover:scale-110"
+                      style={{ 
+                        backgroundColor: option.color,
+                        boxShadow: selectedColor === option.id 
+                          ? `0 0 0 2px var(--bg-base), 0 0 0 4px ${option.color}` 
+                          : 'none'
+                      }}
+                      aria-label={option.label}
+                    />
+                  ))}
+                </div>
+                
+                {/* Pattern Selector - Hidden for now
+                <div className="flex items-center gap-1">
+                  {patternOptions.map((pattern) => (
+                    <button
+                      key={pattern.id}
+                      type="button"
+                      onClick={() => setSelectedPattern(selectedPattern === pattern.id ? null : pattern.id)}
+                      className={`w-7 h-7 rounded-md border transition-all flex items-center justify-center ${
+                        selectedPattern === pattern.id 
+                          ? 'border-border-strong bg-bg-subtle' 
+                          : 'border-border-base hover:border-border-strong hover:bg-bg-subtle'
+                      }`}
+                      aria-label={pattern.label}
+                    >
+                      <img 
+                        src={pattern.src} 
+                        alt={pattern.label}
+                        className="w-4 h-4 opacity-60"
+                        style={{ 
+                          filter: 'invert(1) brightness(0.4)'
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
+                */}
               </div>
 
               <div className="flex justify-end gap-2 mt-6">
@@ -366,6 +447,8 @@ export default function VaultPage() {
                     setIsCreateDialogOpen(false);
                     setNewProjectName("");
                     setNewProjectDescription("");
+                    setSelectedColor(null);
+                    setSelectedPattern(null);
                   }}
                 >
                   Cancel
@@ -384,12 +467,34 @@ export default function VaultPage() {
               {/* Preview Card */}
               <div className="w-full max-w-[280px]">
                 {/* Icon container */}
-                <div className="w-full bg-bg-base rounded-lg flex items-center justify-center mb-2.5 border border-border-base" style={{ height: '164px' }}>
-                  <img 
-                    src="/privateFolderIcon.svg"
-                    alt="Project icon"
-                    className="w-[72px] h-[72px]"
-                  />
+                <div 
+                  className="w-full rounded-lg flex items-center justify-center mb-2.5 border border-border-base transition-colors relative overflow-hidden" 
+                  style={{ 
+                    height: '164px',
+                    backgroundColor: `${getSelectedColorValue()}1F`,
+                  }}
+                >
+                  {/* Pattern overlay - Hidden for now
+                  {getSelectedPatternSrc() && (
+                    <img 
+                      src={getSelectedPatternSrc()!}
+                      alt=""
+                      className="absolute pointer-events-none opacity-50"
+                      style={{
+                        width: '150%',
+                        height: '150%',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  )}
+                  */}
+                  {/* Private Folder Icon with dynamic color */}
+                  <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                    <path d="M27.6104 9C29.7253 9 31.7009 10.0575 32.874 11.8174L37.3223 18.4893H60.9326C64.4263 18.4893 67.2587 21.3209 67.2588 24.8145V56.4443C67.2587 59.938 64.4263 62.7695 60.9326 62.7695H10.3262C6.83255 62.7695 4.00012 59.938 4 56.4443V15.3262C4 11.8325 6.83248 9 10.3262 9H27.6104ZM36 31C33.2386 31 31 33.2386 31 36V38H30C28.8954 38 28 38.8954 28 40V49C28 50.1046 28.8954 51 30 51H42C43.1046 51 44 50.1046 44 49V40C44 38.8954 43.1046 38 42 38H41V36C41 33.2386 38.7614 31 36 31ZM36 42C36.5523 42 37 42.4477 37 43V46C37 46.5523 36.5523 47 36 47C35.4477 47 35 46.5523 35 46V43C35 42.4477 35.4477 42 36 42ZM36 33C37.6569 33 39 34.3432 39 36V38H33V36C33 34.3432 34.3431 33 36 33Z" fill={getSelectedColorValue()}/>
+                  </svg>
                 </div>
                 
                 {/* Title and menu */}

@@ -4,7 +4,7 @@ import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Harvey Demo",
+  title: "Harvey | Vault Demo",
   description: "Professional Class AI for Legal Professionals",
 };
 
