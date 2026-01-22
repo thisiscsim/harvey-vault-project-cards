@@ -289,7 +289,7 @@ export function AppSidebar() {
               
               {/* Vault with collapsible sub-items */}
               <Collapsible
-                open={isVaultOpen && state === "expanded"}
+                open={!!isVaultOpen && state === "expanded"}
                 onOpenChange={setIsVaultOpen}
                 className="group/collapsible"
               >
