@@ -1,10 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { UserPlus, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import DraftDocumentToolbar from "@/components/draft-document-toolbar";
 import ShareArtifactDialog from "@/components/share-artifact-dialog";
 import ExportReviewDialog from "@/components/export-review-dialog";
@@ -83,17 +82,34 @@ export default function DraftArtifactPanel({
       }),
     ],
     content: `
-      <p><strong>Memorandum</strong></p>
-      <p><strong>To:</strong> [INSERT RECIPIENT NAME AND TITLE]<br/>
-      <strong>From:</strong> [INSERT AUTHOR NAME AND TITLE]<br/>
-      <strong>Date:</strong> [INSERT DATE]<br/>
-      <strong>Re:</strong> [INSERT CONCISE STATEMENT OF SUBJECT/ISSUE]</p>
-      <p><strong>Question Presented</strong></p>
-      <p>[Begin this introductory paragraph with a single sentence that crisply states the dispositive legal question on which guidance is sought. Follow with any necessary subordinate questions or clarifications, phrased so that each may be answered "yes" or "no." Conclude with a sentence identifying any jurisdictional or procedural posture relevant to the inquiry.]</p>
-      <p><strong>Brief Answer</strong></p>
-      <p>[Provide a direct, bottom-line response to each question in the order posed above, prefacing each answer with "Yes," "No," or, where appropriate, "Likely," followed by a succinct explanation—typically no more than two or three sentences—summarizing the controlling authority, critical facts, and key reasoning.]</p>
-      <p><strong>Facts</strong></p>
-      <p>[Set forth an objective, chronologically organized statement of all facts material to the analysis, avoiding legal conclusions or argument. Where the record is incomplete or certain facts remain unverified, flag them expressly and note any assumptions made for purposes of the memorandum. If multiple factual scenarios have been contemplated, delineate each separately, always maintaining a neutral tone.]</p>
+      <h1><strong>DRAFT MEMORANDUM</strong></h1>
+      <p><strong>TO:</strong> Board of Directors and Executive Leadership Team<br/>
+      <strong>FROM:</strong> Legal & Compliance Department<br/>
+      <strong>DATE:</strong> January 26, 2026<br/>
+      <strong>RE:</strong> Key Compliance Obligations for Q2 2026 Initial Public Offering</p>
+      <hr/>
+      <h2><strong>Executive Summary</strong></h2>
+      <p>This memorandum outlines the primary compliance obligations and regulatory requirements that our company must satisfy in connection with our planned initial public offering in Q2 2026. As a mid-cap company transitioning to public company status, we will become subject to extensive securities laws, reporting requirements, and corporate governance standards.</p>
+      <h2><strong>I. Securities Registration and Disclosure</strong></h2>
+      <p><strong>SEC Registration Statement (Form S-1)</strong><br/>
+      We must file a comprehensive registration statement with the Securities and Exchange Commission that includes our prospectus. This document requires extensive disclosure regarding our business operations, financial condition, risk factors, management discussion and analysis, and audited financial statements for the past three fiscal years.</p>
+      <p><strong>Prospectus Requirements</strong><br/>
+      The prospectus must provide full and fair disclosure of all material information that would be important to a reasonable investor. This includes detailed descriptions of our business model, competitive landscape, litigation matters, executive compensation, related party transactions, and use of proceeds.</p>
+      <h2><strong>II. Financial Reporting and Auditing</strong></h2>
+      <p><strong>Audited Financial Statements</strong><br/>
+      We must provide audited financial statements prepared in accordance with Generally Accepted Accounting Principles (GAAP) and audited by a registered public accounting firm under PCAOB standards.</p>
+      <p><strong>Internal Controls - Sarbanes-Oxley Act Section 404</strong><br/>
+      Management must establish and document effective internal controls over financial reporting. While mid-cap filers may receive some transition relief, we must begin compliance planning immediately. Annual management assessment of internal controls will be required, with eventual auditor attestation.</p>
+      <p><strong>Ongoing Periodic Reporting</strong><br/>
+      Post-IPO, we will be required to file:</p>
+      <ul>
+        <li>Quarterly Reports (Form 10-Q) within 40 days of quarter-end</li>
+        <li>Annual Reports (Form 10-K) within 60 days of fiscal year-end</li>
+        <li>Current Reports (Form 8-K) for material events within 4 business days</li>
+      </ul>
+      <h2><strong>III. Corporate Governance Requirements</strong></h2>
+      <p><strong>Board Composition and Independence</strong><br/>
+      We must establish a board of directors with a majority of independent directors as defined under applicable stock exchange listing standards. The audit committee must be composed entirely of independent directors, with at least one financial expert.</p>
     `,
     immediatelyRender: false,
     editorProps: {
@@ -114,14 +130,13 @@ export default function DraftArtifactPanel({
   return (
     <>
       <motion.div 
-        initial={{ width: 0, opacity: 0 }}
-        animate={{ width: '100%', opacity: 1 }}
-        exit={{ width: 0, opacity: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         transition={{
-          width: PANEL_ANIMATION,
-          opacity: { duration: 0.15, ease: "easeOut" }
+          opacity: { duration: 0.2, ease: "easeOut" }
         }}
-        className="flex-1 flex flex-col bg-bg-subtle overflow-hidden"
+        className="h-full flex flex-col bg-bg-subtle"
       >
         {/* Header */}
         <div className="px-3 py-4 border-b border-border-base bg-bg-base flex items-center justify-between" style={{ height: '52px' }}>
@@ -164,43 +179,16 @@ export default function DraftArtifactPanel({
           </div>
           
           <div className="flex gap-2 items-center">
-            {/* Sources Button */}
+            {/* Export Button - matches Stubhub page header style */}
             <Button 
-              variant="secondary"
-              onClick={() => onSourcesDrawerOpenChange?.(!sourcesDrawerOpen)}
-              className={cn("gap-2", sourcesDrawerOpen && "bg-bg-subtle")}
-              style={{ height: '32px' }}
-            >
-              {sourcesDrawerOpen ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path fillRule="evenodd" clipRule="evenodd" d="M7 2C5.34315 2 4 3.34315 4 5V19C4 20.6569 5.34315 22 7 22H19C19.5523 22 20 21.5523 20 21V3C20 2.44772 19.5523 2 19 2H7ZM6 19C6 19.5523 6.44772 20 7 20H18V18H7C6.44772 18 6 18.4477 6 19Z" fill="currentColor"/>
-                </svg>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 19C4 20.6569 5.34315 22 7 22H19C19.5523 22 20 21.5523 20 21V3C20 2.44772 19.5523 2 19 2H7C5.34315 2 4 3.34315 4 5V19Z" />
-                  <path d="M20 17H7C5.89543 17 5 17.8954 5 19" />
-                </svg>
-              )}
-              <span>Sources</span>
-            </Button>
-            {/* Share Button */}
-            <button 
-              onClick={() => onShareArtifactDialogOpenChange(true)}
-              className="flex items-center gap-2 px-3 py-1.5 border border-border-base rounded-md bg-bg-base hover:bg-bg-subtle transition-colors text-fg-base text-sm font-normal" 
-              style={{ height: '32px' }}
-            >
-              <UserPlus size={16} className="text-fg-base" />
-              <span className="text-sm font-normal">Share</span>
-            </button>
-            {/* Export Button */}
-            <button 
-              className="flex items-center gap-2 px-3 py-1.5 border border-border-base rounded-md bg-bg-base hover:bg-bg-subtle transition-colors text-fg-base text-sm font-normal" 
-              style={{ height: '32px' }}
+              variant="outline" 
+              size="medium" 
+              className="gap-1.5"
               onClick={() => onExportReviewDialogOpenChange(true)}
             >
-              <Download size={16} className="text-fg-base" />
-              <span className="text-sm font-normal">Export</span>
-            </button>
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
           </div>
         </div>
 
@@ -217,7 +205,7 @@ export default function DraftArtifactPanel({
         
         {/* Content Area */}
         <div 
-          className="flex-1 overflow-y-auto bg-bg-base cursor-text"
+          className="flex-1 overflow-y-auto overflow-x-hidden bg-bg-base cursor-text min-h-0"
           onClick={(e) => {
             // Focus the editor when clicking anywhere in the content area
             // Only if the click target is the container itself or its direct children
@@ -227,7 +215,7 @@ export default function DraftArtifactPanel({
             }
           }}
         >
-          <div className="h-full flex justify-center">
+          <div className="flex justify-center">
             <div className="w-full max-w-[1000px] px-8 py-10">
               <EditorContent editor={editor} />
             </div>
