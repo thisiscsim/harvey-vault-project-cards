@@ -25,6 +25,17 @@ interface AgentState {
   isActive?: boolean; // Whether this is the currently active chat
 }
 
+// Uploaded file type
+interface UploadedFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadProgress: number;
+  status: 'uploading' | 'processing' | 'completed' | 'error';
+  uploadedAt: Date;
+}
+
 interface ConfigurationDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -40,6 +51,8 @@ interface ConfigurationDrawerProps {
   width?: number;
   // Disable animation during resize
   isResizing?: boolean;
+  // Uploaded files
+  uploadedFiles?: UploadedFile[];
 }
 
 // Activity type
@@ -52,6 +65,24 @@ interface Activity {
   time: string;
 }
 
+// Helper to format file size
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
+// Helper to get file icon path
+const getFileIconPath = (fileName: string): string => {
+  const lowerName = fileName.toLowerCase();
+  if (lowerName.endsWith('.pdf')) return '/pdf-icon.svg';
+  if (lowerName.endsWith('.doc') || lowerName.endsWith('.docx')) return '/docx-icon.svg';
+  if (lowerName.endsWith('.xls') || lowerName.endsWith('.xlsx') || lowerName.endsWith('.csv')) return '/xlsx-icon.svg';
+  return '/file.svg';
+};
+
 export default function ConfigurationDrawer({ 
   isOpen, 
   onClose, 
@@ -63,7 +94,8 @@ export default function ConfigurationDrawer({
   onSwitchAgent,
   agentState, // Legacy support
   width = 400, // Default width
-  isResizing = false // Disable animation during resize
+  isResizing = false, // Disable animation during resize
+  uploadedFiles = []
 }: ConfigurationDrawerProps) {
   // Combine legacy agentState with agents array
   const allAgents = agentState?.isRunning 
@@ -199,23 +231,53 @@ export default function ConfigurationDrawer({
   // Overview Tab Content
   const overviewContent = (
     <div className="space-y-0">
-      {/* Sources Shelf */}
-      <div className="pb-4">
-        <div className="flex items-center justify-between h-[44px]">
+      {/* Sources Shelf - includes uploaded files at the top */}
+      <div className="-mx-4 px-4 relative">
+        <div className="flex items-center justify-between h-[36px]">
           <span className="text-xs font-medium text-fg-base leading-[20px]">Sources</span>
           <button className="h-[24px] px-[6px] py-[2px] text-xs font-medium text-fg-subtle hover:text-fg-base transition-colors leading-[16px]">
             See all
           </button>
         </div>
-        <div className="space-y-1 max-h-[200px] overflow-hidden">
+        <div className="space-y-0.5 max-h-[400px] overflow-hidden -mx-2 px-2 pb-8">
+          {/* Uploaded files shown first */}
+          {uploadedFiles.map((file) => (
+            <div key={file.id} className="-mx-2 px-2 py-2.5 hover:bg-bg-subtle rounded-md transition-colors cursor-pointer">
+              <div className="flex items-center gap-2">
+                <img src={getFileIconPath(file.name)} alt="" className="w-5 h-5 flex-shrink-0" />
+                <h4 className="font-medium text-fg-base text-xs truncate flex-1">{file.name}</h4>
+                {file.status === 'uploading' && (
+                  <div className="w-16 h-1 bg-bg-subtle rounded-full overflow-hidden flex-shrink-0">
+                    <div 
+                      className="h-full bg-fg-subtle rounded-full transition-all duration-300"
+                      style={{ width: `${file.uploadProgress}%` }}
+                    />
+                  </div>
+                )}
+                {file.status === 'processing' && (
+                  <span className="text-[10px] text-fg-muted flex-shrink-0">Processing...</span>
+                )}
+                {file.status === 'completed' && (
+                  <span className="text-[10px] text-fg-muted flex-shrink-0">{formatFileSize(file.size)}</span>
+                )}
+              </div>
+            </div>
+          ))}
           {/* Show a mix of sources from different categories */}
           {[
             categorizedSources["SEC.gov"][0],
             categorizedSources["Web Sources"][0],
             categorizedSources["Law Firm Analyses"][0],
-          ].map((source, index) => (
-            <div key={index} className="py-2 hover:bg-bg-subtle rounded-md transition-colors cursor-pointer px-1 -mx-1">
-              <div className="flex items-center gap-1.5">
+            categorizedSources["SEC.gov"][1],
+            categorizedSources["Web Sources"][1],
+            categorizedSources["Law Firm Analyses"][1],
+            categorizedSources["SEC.gov"][2],
+            categorizedSources["Web Sources"][2],
+            categorizedSources["Law Firm Analyses"][2],
+            categorizedSources["Law Firm Analyses"][3],
+          ].filter(Boolean).map((source, index) => (
+            <div key={index} className="-mx-2 px-2 py-2.5 hover:bg-bg-subtle rounded-md transition-colors cursor-pointer">
+              <div className="flex items-center gap-2">
                 {renderSourceIcon(source.icon)}
                 <h4 className="font-medium text-fg-base text-xs truncate flex-1">
                   {source.title}
@@ -224,6 +286,8 @@ export default function ConfigurationDrawer({
             </div>
           ))}
         </div>
+        {/* Bottom gradient overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-bg-base to-transparent pointer-events-none z-10" />
       </div>
       
       {/* Agents Shelf */}

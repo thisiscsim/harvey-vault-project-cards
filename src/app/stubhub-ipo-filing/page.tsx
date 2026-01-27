@@ -458,6 +458,53 @@ export default function StubhubIPOFilingPage() {
   // Dialog state
   const [isFileManagementOpen, setIsFileManagementOpen] = useState(false);
   const [isIManagePickerOpen, setIsIManagePickerOpen] = useState(false);
+  
+  // Uploaded files state for drawer
+  interface UploadedFile {
+    id: string;
+    name: string;
+    size: number;
+    type: string;
+    uploadProgress: number;
+    status: 'uploading' | 'processing' | 'completed' | 'error';
+    uploadedAt: Date;
+  }
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  
+  // Simulate file upload progress
+  const simulateFileUpload = useCallback((fileId: string) => {
+    const uploadInterval = setInterval(() => {
+      setUploadedFiles(prev => {
+        const file = prev.find(f => f.id === fileId);
+        if (!file || file.uploadProgress >= 100) {
+          clearInterval(uploadInterval);
+          return prev;
+        }
+        
+        const increment = Math.random() * 15 + 5;
+        const newProgress = Math.min(file.uploadProgress + increment, 100);
+        
+        return prev.map(f => {
+          if (f.id === fileId) {
+            if (newProgress >= 100) {
+              setTimeout(() => {
+                setUploadedFiles(p => p.map(pf => 
+                  pf.id === fileId ? { ...pf, status: 'processing' as const } : pf
+                ));
+                setTimeout(() => {
+                  setUploadedFiles(p => p.map(pf => 
+                    pf.id === fileId ? { ...pf, status: 'completed' as const } : pf
+                  ));
+                }, 500 + Math.random() * 1000);
+              }, 100);
+            }
+            return { ...f, uploadProgress: newProgress };
+          }
+          return f;
+        });
+      });
+    }, 100);
+  }, []);
   const [shareArtifactDialogOpen, setShareArtifactDialogOpen] = useState(false);
   const [exportReviewDialogOpen, setExportReviewDialogOpen] = useState(false);
   const [isConfigurationDrawerOpen, setIsConfigurationDrawerOpen] = useState(false); // Opens when files uploaded or during search
@@ -1755,20 +1802,23 @@ export default function StubhubIPOFilingPage() {
         onChange={(e) => {
           const files = e.target.files;
           if (files && files.length > 0) {
-            // Ensure a chat exists and get the chatId
-            const chatId = ensureChatExists();
-            
-            // Update chat state using the specific chatId - preserve existing title if it's a workflow
-            updateChatById(chatId, chat => ({
-              ...chat,
-              agentState: {
-                ...chat.agentState,
-                isRunning: true,
-                // Only update taskName if not already set (preserve workflow title)
-                taskName: chat.agentState.taskName || `Processing ${files.length} file${files.length > 1 ? 's' : ''}...`,
-                currentAction: 'Analyzing documents...',
-              }
+            // Create uploaded file entries and simulate upload
+            const newUploadedFiles: UploadedFile[] = Array.from(files).map(file => ({
+              id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              uploadProgress: 0,
+              status: 'uploading' as const,
+              uploadedAt: new Date(),
             }));
+            
+            setUploadedFiles(prev => [...prev, ...newUploadedFiles]);
+            
+            // Start upload simulation for each file
+            newUploadedFiles.forEach(file => {
+              simulateFileUpload(file.id);
+            });
             
             // Open configuration drawer when files are uploaded
             setIsConfigurationDrawerOpen(true);
@@ -3496,26 +3546,16 @@ export default function StubhubIPOFilingPage() {
           {/* Drawer Resize Handle - only show when drawer is open */}
           {isConfigurationDrawerOpen && (
             <div 
-              className="relative group"
+              className={`relative group w-px cursor-col-resize transition-colors flex-shrink-0 ${
+                isHoveringDrawerResizer || isResizingDrawer ? 'bg-border-strong' : 'bg-border-base'
+              }`}
               onMouseEnter={() => setIsHoveringDrawerResizer(true)}
               onMouseLeave={() => setIsHoveringDrawerResizer(false)}
               onMouseDown={handleDrawerResizeMouseDown}
-              style={{
-                width: '1px',
-                backgroundColor: isHoveringDrawerResizer || isResizingDrawer ? '#d4d4d4' : '#e5e5e5',
-                cursor: 'col-resize',
-                transition: 'background-color 0.15s ease',
-                flexShrink: 0,
-              }}
             >
               {/* Invisible wider hit area for easier grabbing */}
               <div 
-                className="absolute inset-y-0"
-                style={{
-                  left: '-4px',
-                  right: '-4px',
-                  cursor: 'col-resize',
-                }}
+                className="absolute inset-y-0 -left-1 -right-1 cursor-col-resize"
               />
             </div>
           )}
@@ -3528,6 +3568,7 @@ export default function StubhubIPOFilingPage() {
               variant="embedded"
               width={drawerWidth}
               isResizing={isResizingDrawer}
+              uploadedFiles={uploadedFiles}
               agents={chatThreads.map(chat => ({
                 id: chat.id,
                 isRunning: chat.agentState.isRunning,

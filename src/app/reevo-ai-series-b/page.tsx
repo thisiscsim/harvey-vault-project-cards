@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { 
   ArrowLeft, Users, Briefcase, ChevronRight,
   Calendar, Tag, User, Clock, FileIcon, 
@@ -17,6 +17,21 @@ import { SvgIcon } from "@/components/svg-icon";
 import { AnimatedBackground } from "../../../components/motion-primitives/animated-background";
 import { TextLoop } from "../../../components/motion-primitives/text-loop";
 import { motion } from "motion/react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  flexRender,
+  createColumnHelper,
+  SortingState,
+} from "@tanstack/react-table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Sample people with access
 const peopleWithAccess = [
@@ -34,6 +49,77 @@ const activities = [
   { id: '4', type: 'create', user: 'sarah.chen@reevo.ai', action: 'created the vault', time: '2w ago' },
 ];
 
+// Category options with their dot colors
+const categoryOptions = [
+  { label: 'Term Sheet', color: '#CE5347' },
+  { label: 'Due Diligence', color: '#638DE0' },
+  { label: 'Financial', color: '#F2D646' },
+  { label: 'Legal', color: '#93C5FD' },
+  { label: 'Corporate', color: '#86EFAC' },
+] as const;
+
+// Types for file management
+interface UploadedFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadProgress: number;
+  status: 'uploading' | 'processing' | 'completed' | 'error';
+  uploadedAt: Date;
+  category?: { label: string; color: string };
+}
+
+// Helper to format file size
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
+// Helper to get file icon path based on file name/type
+const getFileIconPath = (fileName: string, mimeType: string): string => {
+  const lowerName = fileName.toLowerCase();
+  const lowerType = mimeType.toLowerCase();
+  
+  if (lowerName.endsWith('.pdf') || lowerType.includes('pdf')) {
+    return '/pdf-icon.svg';
+  }
+  if (lowerName.endsWith('.doc') || lowerName.endsWith('.docx') || lowerType.includes('word') || lowerType.includes('document')) {
+    return '/docx-icon.svg';
+  }
+  if (lowerName.endsWith('.xls') || lowerName.endsWith('.xlsx') || lowerName.endsWith('.csv') || 
+      lowerType.includes('spreadsheet') || lowerType.includes('excel') || lowerType.includes('csv')) {
+    return '/xlsx-icon.svg';
+  }
+  
+  return '/file.svg';
+};
+
+// Column helper for TanStack Table
+const columnHelper = createColumnHelper<UploadedFile>();
+
+// Mock files data for Reevo Series B
+const mockFiles: UploadedFile[] = [
+  { id: '1', name: 'Series_B_Term_Sheet_Final.pdf', size: 1234567, type: 'application/pdf', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2026-01-20'), category: categoryOptions[0] },
+  { id: '2', name: 'Reevo_Financial_Model_2026.xlsx', size: 2345678, type: 'application/xlsx', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2026-01-18'), category: categoryOptions[2] },
+  { id: '3', name: 'Due_Diligence_Checklist.docx', size: 456789, type: 'application/docx', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2026-01-15'), category: categoryOptions[1] },
+  { id: '4', name: 'Cap_Table_Jan_2026.xlsx', size: 567890, type: 'application/xlsx', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2026-01-14'), category: categoryOptions[2] },
+  { id: '5', name: 'Investor_Rights_Agreement_Draft.pdf', size: 3456789, type: 'application/pdf', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2026-01-12'), category: categoryOptions[3] },
+  { id: '6', name: 'Board_Consent_Resolution.pdf', size: 234567, type: 'application/pdf', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2026-01-10'), category: categoryOptions[4] },
+  { id: '7', name: 'IP_Assignment_Agreements.pdf', size: 876543, type: 'application/pdf', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2026-01-08'), category: categoryOptions[3] },
+  { id: '8', name: 'Revenue_Projections_5yr.xlsx', size: 1234567, type: 'application/xlsx', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2026-01-05'), category: categoryOptions[2] },
+  { id: '9', name: 'Technical_DD_Report.pdf', size: 4567890, type: 'application/pdf', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2026-01-03'), category: categoryOptions[1] },
+  { id: '10', name: 'Certificate_of_Incorporation.pdf', size: 345678, type: 'application/pdf', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2025-12-28'), category: categoryOptions[4] },
+  { id: '11', name: 'Stock_Purchase_Agreement.pdf', size: 2345678, type: 'application/pdf', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2025-12-20'), category: categoryOptions[3] },
+  { id: '12', name: 'Employee_Stock_Option_Plan.pdf', size: 567890, type: 'application/pdf', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2025-12-15'), category: categoryOptions[3] },
+  { id: '13', name: 'Customer_Contracts_Summary.xlsx', size: 987654, type: 'application/xlsx', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2025-12-10'), category: categoryOptions[1] },
+  { id: '14', name: 'Bylaws_Amended.pdf', size: 456789, type: 'application/pdf', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2025-12-05'), category: categoryOptions[4] },
+  { id: '15', name: 'Audited_Financials_2025.pdf', size: 5678901, type: 'application/pdf', uploadProgress: 100, status: 'completed', uploadedAt: new Date('2025-11-30'), category: categoryOptions[2] },
+];
+
 export default function ReevoAISeriesBPage() {
   const router = useRouter();
   const [projectName, setProjectName] = useState("Reevo AI - Series B Financing");
@@ -46,20 +132,122 @@ export default function ReevoAISeriesBPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   
-  // Configuration panel state - load from localStorage
-  const [isConfigPanelCollapsed, setIsConfigPanelCollapsed] = useState<boolean | null>(null);
+  // Configuration panel state - default to collapsed
+  const [isConfigPanelCollapsed, setIsConfigPanelCollapsed] = useState(true);
+  
+  // File table state
+  const [files] = useState<UploadedFile[]>(mockFiles);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Toggle row selection
+  const toggleRowSelection = useCallback((id: string) => {
+    setSelectedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+  
+  // Toggle all rows selection
+  const toggleAllRows = useCallback(() => {
+    if (selectedRows.size === files.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(files.map(f => f.id)));
+    }
+  }, [files, selectedRows.size]);
+  
+  // TanStack Table columns
+  const columns = useMemo(() => [
+    columnHelper.accessor('name', {
+      header: 'Name',
+      cell: info => {
+        const file = info.row.original;
+        const iconPath = getFileIconPath(file.name, file.type);
+        return (
+          <div className="flex items-center gap-2 min-w-0">
+            <img src={iconPath} alt="" className="w-4 h-4 flex-shrink-0" />
+            <span className="text-sm text-fg-base truncate leading-5">{info.getValue()}</span>
+          </div>
+        );
+      },
+    }),
+    columnHelper.accessor('category', {
+      header: 'Category',
+      cell: info => {
+        const category = info.getValue();
+        if (!category) return null;
+        return (
+          <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-bg-subtle rounded">
+            <div 
+              className="w-1.5 h-1.5 rounded-full flex-shrink-0" 
+              style={{ backgroundColor: category.color }}
+            />
+            <span className="text-xs font-medium text-fg-subtle leading-4">{category.label}</span>
+          </div>
+        );
+      },
+    }),
+    columnHelper.accessor('uploadedAt', {
+      header: 'Last modified',
+      cell: info => {
+        const date = info.getValue();
+        return (
+          <span className="text-sm text-fg-subtle leading-5">
+            {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </span>
+        );
+      },
+    }),
+    columnHelper.accessor('size', {
+      header: 'Size',
+      cell: info => (
+        <span className="text-sm text-fg-subtle leading-5">{formatFileSize(info.getValue())}</span>
+      ),
+    }),
+  ], []);
+  
+  // TanStack Table instance
+  const table = useReactTable({
+    data: files,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+  });
+  
+  // Pagination calculations
+  const totalItems = files.length;
+  const totalPages = Math.ceil(totalItems / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, totalItems);
+  
+  // Get paginated rows
+  const paginatedRows = useMemo(() => {
+    const allRows = table.getRowModel().rows;
+    return allRows.slice(startIndex, endIndex);
+  }, [table, startIndex, endIndex]);
 
   // Load drawer state from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('reevo-drawer-collapsed');
-    setIsConfigPanelCollapsed(saved === 'true');
+    // Default to collapsed (true) if no saved value
+    setIsConfigPanelCollapsed(saved === null ? true : saved === 'true');
   }, []);
 
-  // Persist drawer state to localStorage (only after initial load)
+  // Persist drawer state to localStorage
   useEffect(() => {
-    if (isConfigPanelCollapsed !== null) {
-      localStorage.setItem('reevo-drawer-collapsed', String(isConfigPanelCollapsed));
-    }
+    localStorage.setItem('reevo-drawer-collapsed', String(isConfigPanelCollapsed));
   }, [isConfigPanelCollapsed]);
 
   // Focus input when entering edit mode
@@ -392,31 +580,277 @@ export default function ReevoAISeriesBPage() {
                     </div>
                   </div>
 
-                  {/* Dropzone */}
-                  <div 
-                    className="bg-bg-base border border-dashed border-border-strong rounded-lg flex flex-col items-center justify-center p-8 hover:border-fg-muted transition-colors cursor-pointer"
-                    style={{ minHeight: '400px' }}
-                  >
-                    <div className="flex flex-col items-center gap-3 w-[411px]">
-                      <CloudUpload className="w-6 h-6 text-fg-muted" />
-                      <div className="text-center flex flex-col gap-0.5">
-                        <p className="text-sm font-medium text-fg-base leading-5">Drag and drop your files</p>
-                        <p className="text-xs text-fg-subtle leading-4">Supported file types: CSV, Email, Excel, PDF, PowerPoint, RTF, Text, Word, Zip</p>
+                  {/* File Table */}
+                  <div className="flex flex-col w-full">
+                    {/* Header Row */}
+                    <div className="flex items-center h-10 border-b border-border-base sticky top-0 bg-bg-base z-20">
+                      {/* Checkbox Header */}
+                      <div className="flex items-center h-full pr-3 py-3 shrink-0">
+                        <button
+                          onClick={toggleAllRows}
+                          className="w-4 h-4 rounded border border-black/40 dark:border-white/40 flex items-center justify-center hover:border-black/60 dark:hover:border-white/60 transition-colors"
+                        >
+                          {selectedRows.size === files.length && files.length > 0 && (
+                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                              <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                          {selectedRows.size > 0 && selectedRows.size < files.length && (
+                            <div className="w-2 h-0.5 bg-fg-base rounded-full" />
+                          )}
+                        </button>
                       </div>
-                      <button className="h-7 px-2 bg-bg-interactive text-fg-on-color rounded-[6px] hover:opacity-90 transition-all flex items-center gap-1.5 text-sm font-medium leading-5">
-                        <Upload className="w-4 h-4" />
-                        Upload
+                      {/* Name Header */}
+                      <button 
+                        className="flex-1 min-w-[200px] flex items-center gap-2 h-full px-1 py-3 cursor-pointer group"
+                        onClick={() => table.getColumn('name')?.toggleSorting()}
+                      >
+                        <span className="text-xs font-medium text-fg-subtle leading-4">Name</span>
+                        {table.getColumn('name')?.getIsSorted() && (
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={table.getColumn('name')?.getIsSorted() === 'desc' ? 'rotate-180' : ''}>
+                            <path d="M3 5L6 8L9 5" stroke="#848079" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
                       </button>
-                      <p className="text-[10px] text-fg-muted leading-[14px]">Or choose from</p>
-                      <div className="flex gap-1">
-                        <button className="h-7 px-[9px] border border-border-base rounded-[6px] hover:border-border-strong hover:bg-bg-subtle transition-colors flex items-center gap-1.5">
-                          <Image src="/sharepoint.svg" alt="SharePoint" width={16} height={16} />
-                          <span className="text-sm font-medium text-fg-base leading-5">SharePoint (OneDrive)</span>
-                        </button>
-                        <button className="h-7 px-[9px] border border-border-base rounded-[6px] hover:border-border-strong hover:bg-bg-subtle transition-colors flex items-center gap-1.5">
-                          <Image src="/google-drive.svg" alt="Google Drive" width={16} height={16} />
-                          <span className="text-sm font-medium text-fg-base leading-5">Google Drive</span>
-                        </button>
+                      {/* Category Header */}
+                      <button 
+                        className="flex-1 min-w-[180px] flex items-center gap-2 h-full px-1 py-3 cursor-pointer"
+                        onClick={() => table.getColumn('category')?.toggleSorting()}
+                      >
+                        <span className="text-xs font-medium text-fg-muted leading-4">Category</span>
+                      </button>
+                      {/* Last Modified Header */}
+                      <button 
+                        className="w-[128px] flex items-center gap-2 h-full px-1 py-3 cursor-pointer shrink-0"
+                        onClick={() => table.getColumn('uploadedAt')?.toggleSorting()}
+                      >
+                        <span className="text-xs font-medium text-fg-muted leading-4">Last modified</span>
+                      </button>
+                      {/* Size Header */}
+                      <button 
+                        className="w-[80px] flex items-center gap-2 h-full px-1 py-3 cursor-pointer shrink-0"
+                        onClick={() => table.getColumn('size')?.toggleSorting()}
+                      >
+                        <span className="text-xs font-medium text-fg-muted leading-4">Size</span>
+                      </button>
+                    </div>
+                    
+                    {/* Table Rows */}
+                    <div className="flex flex-col">
+                      {paginatedRows.map(row => {
+                        const file = row.original;
+                        const isSelected = selectedRows.has(file.id);
+                        const isHovered = hoveredRowId === file.id;
+                        
+                        return (
+                          <div 
+                            key={row.id}
+                            className="flex items-center h-10 border-b border-border-base relative group cursor-pointer"
+                            onMouseEnter={() => setHoveredRowId(file.id)}
+                            onMouseLeave={() => setHoveredRowId(null)}
+                          >
+                            {/* Row Background - extends beyond bounds */}
+                            {isHovered && (
+                              <div 
+                                className="absolute inset-y-[-1px] -left-4 -right-4 bg-bg-base-hover rounded-xl pointer-events-none"
+                                style={{ zIndex: 0 }}
+                              />
+                            )}
+                            {/* Checkbox Cell */}
+                            <div className="flex items-center h-full pr-3 py-3 shrink-0 z-10">
+                              <button
+                                onClick={() => toggleRowSelection(file.id)}
+                                className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                  isSelected ? 'border-fg-base bg-fg-base' : 'border-black/40 dark:border-white/40 hover:border-black/60 dark:hover:border-white/60'
+                                }`}
+                              >
+                                {isSelected && (
+                                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                    <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
+                            
+                            {/* Name Cell */}
+                            <div className="flex-1 min-w-[200px] flex items-center gap-2 h-full px-1 py-3 overflow-hidden z-10">
+                              {(() => {
+                                const cell = row.getVisibleCells().find(c => c.column.id === 'name');
+                                return cell ? flexRender(cell.column.columnDef.cell, cell.getContext()) : null;
+                              })()}
+                            </div>
+                            
+                            {/* Category Cell */}
+                            <div className="flex-1 min-w-[180px] flex items-center h-full px-1 py-3 z-10">
+                              {(() => {
+                                const cell = row.getVisibleCells().find(c => c.column.id === 'category');
+                                return cell ? flexRender(cell.column.columnDef.cell, cell.getContext()) : null;
+                              })()}
+                            </div>
+                            
+                            {/* Last Modified Cell */}
+                            <div className="w-[128px] flex items-center h-full px-1 py-3 shrink-0 z-10">
+                              {(() => {
+                                const cell = row.getVisibleCells().find(c => c.column.id === 'uploadedAt');
+                                return cell ? flexRender(cell.column.columnDef.cell, cell.getContext()) : null;
+                              })()}
+                            </div>
+                            
+                            {/* Size Cell */}
+                            <div className="w-[80px] flex items-center h-full px-1 py-3 shrink-0 z-10">
+                              {(() => {
+                                const cell = row.getVisibleCells().find(c => c.column.id === 'size');
+                                return cell ? flexRender(cell.column.columnDef.cell, cell.getContext()) : null;
+                              })()}
+                            </div>
+                            
+                            {/* Hover Action Buttons */}
+                            {isHovered && (
+                              <div className="absolute -right-4 top-0 bottom-0 flex items-center pr-4 z-20">
+                                {/* Gradient fade */}
+                                <div className="absolute inset-y-0 bg-gradient-to-r from-transparent to-bg-base-hover pointer-events-none" style={{ right: '100%', width: '64px' }} />
+                                {/* Solid background behind buttons */}
+                                <div className="absolute inset-0 bg-bg-base-hover rounded-r-xl pointer-events-none" />
+                                <div className="flex items-center gap-0 relative z-10">
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button className="w-8 h-8 flex items-center justify-center rounded-lg text-fg-subtle hover:text-fg-base hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <path d="M2 5.5C2 4.67157 2.67157 4 3.5 4H6L7.5 6H12.5C13.3284 6 14 6.67157 14 7.5V11.5C14 12.3284 13.3284 13 12.5 13H3.5C2.67157 13 2 12.3284 2 11.5V5.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M9 8L11 10M11 10L9 12M11 10H6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                                          </svg>
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">
+                                        <p>Move</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button className="w-8 h-8 flex items-center justify-center rounded-lg text-fg-subtle hover:text-fg-base hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <path d="M8 2V11M8 11L4 7M8 11L12 7M2 14H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                                          </svg>
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">
+                                        <p>Download</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button className="w-8 h-8 flex items-center justify-center rounded-lg text-fg-subtle hover:text-fg-base hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <path d="M11.5 2.5L13.5 4.5M2 14L2.5 11.5L12 2L14 4L4.5 13.5L2 14Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                                          </svg>
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">
+                                        <p>Rename</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button className="w-8 h-8 flex items-center justify-center rounded-lg text-fg-subtle hover:text-fg-base hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <path d="M2 4H14M5 4V3C5 2.44772 5.44772 2 6 2H10C10.5523 2 11 2.44772 11 3V4M12 4V13C12 13.5523 11.5523 14 11 14H5C4.44772 14 4 13.5523 4 13V4H12Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                                          </svg>
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">
+                                        <p>Delete</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Pagination Footer */}
+                    <div className="flex items-center justify-between py-4 mt-auto">
+                      <span className="text-xs font-medium text-fg-subtle leading-4">
+                        Showing {totalItems === 0 ? 0 : startIndex + 1} to {endIndex} of {totalItems} items
+                      </span>
+                      <div className="flex items-center gap-12">
+                        {/* Rows per page */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-fg-subtle leading-4">Rows per page</span>
+                          <div className="relative">
+                            <select 
+                              value={rowsPerPage}
+                              onChange={(e) => {
+                                setRowsPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                              }}
+                              className="h-8 w-20 px-2.5 pr-8 text-sm border border-border-base rounded-md bg-bg-base text-fg-base appearance-none cursor-pointer hover:border-border-strong transition-colors"
+                            >
+                              <option value={20}>20</option>
+                              <option value={50}>50</option>
+                              <option value={100}>100</option>
+                            </select>
+                            <svg 
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" 
+                              width="16" 
+                              height="16" 
+                              viewBox="0 0 16 16" 
+                              fill="none"
+                            >
+                              <path d="M4 6L8 10L12 6" stroke="#8F8C85" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                        </div>
+                        {/* Pagination buttons */}
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => setCurrentPage(1)}
+                            disabled={currentPage === 1}
+                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path d="M9 5L6 8L9 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M13 5L10 8L13 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                          <button 
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path d="M10 5L7 8L10 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                          <button 
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path d="M6 5L9 8L6 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                          <button 
+                            onClick={() => setCurrentPage(totalPages)}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path d="M7 5L10 8L7 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M3 5L6 8L3 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -426,7 +860,7 @@ export default function ReevoAISeriesBPage() {
           </div>
           
           {/* Right Panel - Vault Details */}
-          <div className={`${isConfigPanelCollapsed === null ? 'w-[400px] border-l opacity-0' : isConfigPanelCollapsed ? 'w-0 border-l-0 opacity-100' : 'w-[400px] border-l opacity-100'} border-border-base flex flex-col bg-bg-base ${isConfigPanelCollapsed !== null ? 'transition-all duration-200 ease-linear' : ''} flex-shrink-0 overflow-hidden`}>
+          <div className={`${isConfigPanelCollapsed ? 'w-0 border-l-0' : 'w-[400px] border-l'} border-border-base flex flex-col bg-bg-base transition-all duration-200 ease-linear flex-shrink-0 overflow-hidden`}>
             <div className="w-[400px] flex flex-col h-full">
               <div className="pl-[20px] pr-[14px] pt-[12px] pb-[8px] flex items-center justify-between">
                 <span className="text-sm font-medium text-fg-base leading-[20px]">Vault details</span>
@@ -450,21 +884,21 @@ export default function ReevoAISeriesBPage() {
                     <div className="flex flex-col gap-[8px]">
                       <div className="flex items-center h-[28px]">
                         <div className="flex items-center gap-[4px] w-[128px] shrink-0 text-fg-subtle">
-                          <FileIcon className="w-4 h-4" />
+                          <SvgIcon src="/central_icons/File.svg" alt="Files" width={16} height={16} className="text-fg-subtle" />
                           <span className="text-xs leading-[16px]">Files</span>
                         </div>
-                        <span className="text-xs text-fg-base leading-[16px] flex-1">847 files (2.3mb)</span>
+                        <span className="text-xs text-fg-base leading-[16px] flex-1">{files.length} files</span>
                       </div>
                       <div className="flex items-center h-[28px]">
                         <div className="flex items-center gap-[4px] w-[128px] shrink-0 text-fg-subtle">
-                          <MessageSquare className="w-4 h-4" />
+                          <SvgIcon src="/central_icons/Queries.svg" alt="Queries" width={16} height={16} className="text-fg-subtle" />
                           <span className="text-xs leading-[16px]">Queries</span>
                         </div>
                         <span className="text-xs text-fg-base leading-[16px] flex-1">12 queries</span>
                       </div>
                       <div className="flex items-center h-[28px]">
                         <div className="flex items-center gap-[4px] w-[128px] shrink-0 text-fg-subtle">
-                          <Tag className="w-4 h-4" />
+                          <SvgIcon src="/central_icons/Tag.svg" alt="Tags" width={16} height={16} className="text-fg-subtle" />
                           <span className="text-xs leading-[16px]">Tags</span>
                         </div>
                         <div className="flex flex-wrap items-center gap-[4px] flex-1">
@@ -475,7 +909,7 @@ export default function ReevoAISeriesBPage() {
                       </div>
                       <div className="flex items-center h-[28px]">
                         <div className="flex items-center gap-[4px] w-[128px] shrink-0 text-fg-subtle">
-                          <User className="w-4 h-4" />
+                          <SvgIcon src="/central_icons/User.svg" alt="Owner" width={16} height={16} className="text-fg-subtle" />
                           <span className="text-xs leading-[16px]">Owner</span>
                         </div>
                         <div className="flex items-center gap-[4px] flex-1">
@@ -485,21 +919,21 @@ export default function ReevoAISeriesBPage() {
                       </div>
                       <div className="flex items-center h-[28px]">
                         <div className="flex items-center gap-[4px] w-[128px] shrink-0 text-fg-subtle">
-                          <Calendar className="w-4 h-4" />
+                          <SvgIcon src="/central_icons/Calendar Edit.svg" alt="Created on" width={16} height={16} className="text-fg-subtle" />
                           <span className="text-xs leading-[16px]">Created on</span>
                         </div>
                         <span className="text-xs text-fg-base leading-[16px] flex-1">January 5, 2026</span>
                       </div>
                       <div className="flex items-center h-[28px]">
                         <div className="flex items-center gap-[4px] w-[128px] shrink-0 text-fg-subtle">
-                          <Clock className="w-4 h-4" />
+                          <SvgIcon src="/central_icons/History.svg" alt="Last edited" width={16} height={16} className="text-fg-subtle" />
                           <span className="text-xs leading-[16px]">Last edited</span>
                         </div>
                         <span className="text-xs text-fg-base leading-[16px] flex-1">2d ago</span>
                       </div>
                       <div className="flex items-start">
                         <div className="flex items-center gap-[4px] w-[122px] shrink-0 h-[28px] text-fg-subtle">
-                          <Edit3 className="w-4 h-4" />
+                          <SvgIcon src="/central_icons/Description.svg" alt="Description" width={16} height={16} className="text-fg-subtle" />
                           <span className="text-xs leading-[16px]">Description</span>
                         </div>
                         <div className="flex-1 p-[6px] rounded-[6px]">
@@ -509,10 +943,45 @@ export default function ReevoAISeriesBPage() {
                     </div>
                   </div>
                   
+                  {/* Memory - Empty State */}
+                  <div className="border-t border-border-base px-[14px] pt-[8px] pb-[20px]">
+                    <div className="flex items-center justify-between h-[44px] pl-[6px]">
+                      <span className="text-xs font-medium text-fg-base leading-[20px]">Memory</span>
+                    </div>
+                    <div className="flex flex-col gap-[12px] items-center justify-center px-[6px]">
+                      <div className="h-[92px] w-[100px] flex items-center justify-center">
+                        <img src="/memory_cube.svg" alt="Memory" className="w-full h-full object-contain" />
+                      </div>
+                      <p className="text-xs text-fg-muted leading-[16px] text-center">
+                        Memory will automatically build up over time as you start working and generating more queries
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Instructions - Empty State */}
+                  <div className="border-t border-border-base px-[14px] pt-[8px] pb-[20px]">
+                    <div className="flex items-center justify-between h-[44px] pl-[6px]">
+                      <span className="text-xs font-medium text-fg-base leading-[20px]">Instructions</span>
+                      <button 
+                        className="h-[24px] px-[6px] py-[2px] text-xs font-medium text-fg-subtle hover:text-fg-base transition-colors leading-[16px]"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="flex flex-col gap-[12px] items-center justify-center px-[6px]">
+                      <div className="h-[92px] w-[92px] flex items-center justify-center">
+                        <img src="/instruction_lines.svg" alt="Instructions" className="w-full h-full object-contain" />
+                      </div>
+                      <p className="text-xs text-fg-muted leading-[16px] text-center">
+                        Provide Harvey with relevant instructions and information for queries within this vault.
+                      </p>
+                    </div>
+                  </div>
+                  
                   {/* Activity */}
                   <div className="border-t border-border-base px-[14px] pt-[8px] pb-[20px]">
                     <div className="flex items-center justify-between h-[44px] pl-[6px]">
-                      <span className="text-sm font-medium text-fg-muted leading-[20px]">Activity</span>
+                      <span className="text-xs font-medium text-fg-base leading-[20px]">Activity</span>
                       <button className="h-[24px] px-[6px] py-[2px] text-xs font-medium text-fg-subtle hover:text-fg-base transition-colors leading-[16px]">See all</button>
                     </div>
                     <div className="pl-[6px]">
@@ -526,7 +995,7 @@ export default function ReevoAISeriesBPage() {
                               {!isLast && <div className="w-px flex-1 bg-border-base" />}
                             </div>
                             <div className={`flex-1 flex flex-col gap-[4px] ${!isLast ? 'pb-[16px]' : ''}`}>
-                              <p className="text-sm text-fg-subtle leading-[20px]">
+                              <p className="text-xs text-fg-subtle leading-[16px]">
                                 <span>{activity.user}</span>
                                 {' '}{activity.action}{' '}
                                 {activity.target && <span className="font-medium">{activity.target}</span>}

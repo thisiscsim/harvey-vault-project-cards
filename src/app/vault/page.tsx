@@ -45,6 +45,39 @@ export default function VaultPage() {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedPattern, setSelectedPattern] = useState<string | null>(null);
   const projectNameInputRef = useRef<HTMLInputElement>(null);
+  
+  // Random colors state for project cards (toggled with 'C' key)
+  const [projectColors, setProjectColors] = useState<Record<number, string>>({});
+  const [colorsEnabled, setColorsEnabled] = useState(false);
+
+  // Keyboard shortcut 'C' to toggle random colors on project cards
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      if (e.key === 'c' || e.key === 'C') {
+        setColorsEnabled(prev => {
+          const newEnabled = !prev;
+          if (newEnabled) {
+            // Generate random colors for all projects
+            const newColors: Record<number, string> = {};
+            for (let i = 1; i <= 10; i++) {
+              const randomColor = colorOptions[Math.floor(Math.random() * colorOptions.length)];
+              newColors[i] = randomColor.color;
+            }
+            setProjectColors(newColors);
+          }
+          return newEnabled;
+        });
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Auto-focus the project name input when dialog opens
   useEffect(() => {
@@ -293,24 +326,60 @@ export default function VaultPage() {
                 {filteredProjects.map((project) => {
                   const isStubhubProject = project.name === "Stubhub IPO Filing";
                   const isReevoProject = project.name === "Reevo AI - Series B Financing";
-                  const projectLink = isStubhubProject ? "/stubhub-ipo-filing" : isReevoProject ? "/reevo-ai-series-b" : null;
+                  const isRegulatoryProject = project.name === "Regulatory Compliance Audit";
+                  const projectLink = isStubhubProject 
+                    ? "/stubhub-ipo-filing" 
+                    : isReevoProject 
+                      ? "/reevo-ai-series-b" 
+                      : isRegulatoryProject 
+                        ? "/regulatory-compliance-audit" 
+                        : null;
+                  
+                  const projectColor = colorsEnabled ? projectColors[project.id] : null;
+                  
+                  // Determine icon src
+                  const iconSrc = project.name === "Stubhub IPO Filing" ? "/privateFolderIcon.svg" :
+                    project.type === "shared" ? "/sharedFolderIcon.svg" :
+                    project.type === "knowledge" ? "/knowledgeBaseIcon.svg" :
+                    "/folderIcon.svg";
                   
                   const content = (
                     <div
                       className="cursor-pointer group"
                     >
                   {/* Icon container */}
-                  <div className="w-full bg-bg-subtle rounded-lg flex items-center justify-center mb-2.5 transition-colors group-hover:bg-bg-subtle-hover" style={{ height: '162px' }}>
-                    <img 
-                      src={
-                        project.name === "Stubhub IPO Filing" ? "/privateFolderIcon.svg" :
-                        project.type === "shared" ? "/sharedFolderIcon.svg" :
-                        project.type === "knowledge" ? "/knowledgeBaseIcon.svg" :
-                        "/folderIcon.svg"
-                      }
-                      alt={`${project.name} icon`}
-                      className="w-[72px] h-[72px]"
-                    />
+                  <div 
+                    className="w-full rounded-lg flex items-center justify-center mb-2.5 transition-colors relative overflow-hidden" 
+                    style={{ 
+                      height: '162px',
+                      backgroundColor: projectColor ? `${projectColor}1F` : undefined,
+                    }}
+                  >
+                    {!projectColor && (
+                      <div className="absolute inset-0 bg-bg-subtle group-hover:bg-bg-subtle-hover transition-colors" />
+                    )}
+                    {projectColor ? (
+                      <div 
+                        className="w-[72px] h-[72px] relative z-10"
+                        style={{
+                          backgroundColor: projectColor,
+                          WebkitMaskImage: `url(${iconSrc})`,
+                          WebkitMaskSize: 'contain',
+                          WebkitMaskRepeat: 'no-repeat',
+                          WebkitMaskPosition: 'center',
+                          maskImage: `url(${iconSrc})`,
+                          maskSize: 'contain',
+                          maskRepeat: 'no-repeat',
+                          maskPosition: 'center',
+                        }}
+                      />
+                    ) : (
+                      <img 
+                        src={iconSrc}
+                        alt={`${project.name} icon`}
+                        className="w-[72px] h-[72px] relative z-10"
+                      />
+                    )}
                   </div>
                   
                   {/* Title and menu */}
