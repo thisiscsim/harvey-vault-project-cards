@@ -896,10 +896,10 @@ export default function RegulatoryComplianceAuditPage() {
                 {activeTab === "overview" && (
                 <div>
                   {/* Dashboard Cards */}
-                  <div className="grid grid-cols-3 gap-3 mb-6">
+                  <div className="flex flex-wrap gap-3 mb-6">
                     {/* Reviewed Documents Card */}
                     <div 
-                      className="border border-border-base rounded-[10px] flex flex-col overflow-hidden relative" 
+                      className="flex-1 min-w-[280px] border border-border-base rounded-[10px] flex flex-col overflow-hidden relative" 
                       style={{ height: '350px' }}
                       onMouseEnter={() => setIsReviewedCardHovered(true)}
                       onMouseLeave={() => setIsReviewedCardHovered(false)}
@@ -1016,7 +1016,7 @@ export default function RegulatoryComplianceAuditPage() {
                     
                     {/* Red Flags Card */}
                     <div 
-                      className="border border-border-base rounded-[10px] flex flex-col overflow-hidden relative" 
+                      className="flex-1 min-w-[280px] border border-border-base rounded-[10px] flex flex-col overflow-hidden relative" 
                       style={{ height: '350px' }}
                       onMouseEnter={() => setIsRedFlagsCardHovered(true)}
                       onMouseLeave={() => setIsRedFlagsCardHovered(false)}
@@ -1158,7 +1158,7 @@ export default function RegulatoryComplianceAuditPage() {
                     
                     {/* Gap Analysis Card */}
                     <div 
-                      className="border border-border-base rounded-[10px] flex flex-col overflow-hidden relative" 
+                      className="flex-1 min-w-[280px] border border-border-base rounded-[10px] flex flex-col overflow-hidden relative" 
                       style={{ height: '350px' }}
                       onMouseEnter={() => setIsGapAnalysisCardHovered(true)}
                       onMouseLeave={() => setIsGapAnalysisCardHovered(false)}
@@ -1646,11 +1646,11 @@ export default function RegulatoryComplianceAuditPage() {
                             </div>
                             
                             {/* Query Type Cell */}
-                            <div className="flex-1 min-w-[180px] flex items-center gap-1.5 h-full px-1 py-3 z-10">
+                            <div className="flex-1 min-w-[180px] flex items-center gap-1.5 h-full px-1 py-3 z-10 overflow-hidden">
                               {query.chips.map((chip, idx) => (
-                                <div key={idx} className="flex items-center gap-1 bg-bg-subtle rounded-full px-2 py-1">
+                                <div key={idx} className="flex items-center gap-1 bg-bg-subtle rounded-full px-2 py-1 min-w-0">
                                   <SvgIcon src={chip.icon} alt={chip.label} width={14} height={14} className="text-fg-subtle shrink-0" />
-                                  <span className="text-xs font-medium text-fg-subtle leading-4">{chip.label}</span>
+                                  <span className="text-xs font-medium text-fg-subtle leading-4 whitespace-nowrap truncate">{chip.label}</span>
                                 </div>
                               ))}
                             </div>
@@ -1720,34 +1720,21 @@ export default function RegulatoryComplianceAuditPage() {
             </div>
           </div>
           
-          {/* Chat Panel Resize Handle */}
+          {/* Chat Panel Separator */}
           {isChatPanelOpen && (
-            <div 
-              className={`relative group w-px cursor-col-resize transition-colors duration-150 flex-shrink-0 ${
-                isHoveringResizer || isResizing 
-                  ? 'bg-border-strong' 
-                  : 'bg-border-base'
-              }`}
-              onMouseEnter={() => setIsHoveringResizer(true)}
-              onMouseLeave={() => setIsHoveringResizer(false)}
-              onMouseDown={handleResizeMouseDown}
-            >
-              <div 
-                className="absolute inset-y-0 -left-1 -right-1 cursor-col-resize"
-              />
-            </div>
+            <div className="w-px bg-border-base flex-shrink-0" />
           )}
           
-          {/* Right Side - Chat Panel (same structure as Stubhub but on the right) */}
+          {/* Right Side - Chat Panel */}
           <AnimatePresence mode="wait">
             {isChatPanelOpen && (
               <motion.div
                 ref={containerRef}
                 key="chat-panel"
-                className="flex flex-col bg-bg-base overflow-hidden"
+                className="flex flex-col bg-bg-base overflow-hidden w-[401px]"
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ 
-                  width: isResizing ? chatWidth : chatWidth,
+                  width: 401,
                   opacity: 1 
                 }}
                 exit={{ width: 0, opacity: 0 }}
@@ -1756,8 +1743,7 @@ export default function RegulatoryComplianceAuditPage() {
                   opacity: { duration: 0.15, ease: "easeOut" }
                 }}
                 style={{ 
-                  flexShrink: 0,
-                  width: chatWidth
+                  flexShrink: 0
                 }}
               >
                 {/* Chat Header - always visible */}

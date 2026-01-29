@@ -982,11 +982,11 @@ export default function ReevoAISeriesBPage() {
                             </div>
                             
                             {/* Query Type Cell */}
-                            <div className="flex-1 min-w-[180px] flex items-center gap-1.5 h-full px-1 py-3 z-10">
+                            <div className="flex-1 min-w-[180px] flex items-center gap-1.5 h-full px-1 py-3 z-10 overflow-hidden">
                               {query.chips.map((chip, idx) => (
-                                <div key={idx} className="flex items-center gap-1 bg-bg-subtle rounded-full px-2 py-1">
+                                <div key={idx} className="flex items-center gap-1 bg-bg-subtle rounded-full px-2 py-1 min-w-0">
                                   <SvgIcon src={chip.icon} alt={chip.label} width={14} height={14} className="text-fg-subtle shrink-0" />
-                                  <span className="text-xs font-medium text-fg-subtle leading-4">{chip.label}</span>
+                                  <span className="text-xs font-medium text-fg-subtle leading-4 whitespace-nowrap truncate">{chip.label}</span>
                                 </div>
                               ))}
                             </div>

@@ -172,7 +172,7 @@ export function AppSidebar() {
         "p-0 relative",
         state === "collapsed" && "group"
       )}>
-        {/* Paul Weiss logo/avatar */}
+        {/* Latham & Watkins logo/avatar */}
         <div className={cn(
           "flex items-center h-14 transition-colors",
           state === "expanded" ? "px-2 gap-[6px]" : "px-2 justify-center"
@@ -184,14 +184,14 @@ export function AppSidebar() {
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-[6px] min-w-0 flex-1 rounded-md px-2 h-[32px] hover:bg-bg-subtle-hover transition-colors">
                     <Image
-                      src="/PW-icon logo.png"
-                      alt="Paul Weiss"
+                      src="/latham-logo.webp"
+                      alt="Latham & Watkins"
                       width={20}
                       height={20}
                       className="rounded-[4px] shrink-0"
                     />
                     <span className="text-sm font-medium text-fg-base truncate min-w-0">
-                      Paul, Weiss, Rifkind, Wharton & Garrison LLP
+                      Latham & Watkins LLP
                     </span>
                   </button>
                 </DropdownMenuTrigger>
@@ -258,8 +258,8 @@ export function AppSidebar() {
                 />
               ) : (
                 <Image
-                  src="/PW-icon logo.png"
-                  alt="Paul Weiss"
+                  src="/latham-logo.webp"
+                  alt="Latham & Watkins"
                   width={20}
                   height={20}
                   className="rounded-[4px]"
