@@ -7,8 +7,8 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to assistant page on load
-    router.replace("/assistant");
+    // Redirect to vault page on load
+    router.replace("/vault");
   }, [router]);
 
   return (
@@ -17,7 +17,7 @@ export default function HomePage() {
         <div className="w-8 h-8 mx-auto mb-4">
           <img src="/harvey-avatar.svg" alt="Harvey" className="w-8 h-8" />
         </div>
-        <p className="text-fg-muted text-sm">Redirecting to Harvey Assistant...</p>
+        <p className="text-fg-muted text-sm">Redirecting...</p>
       </div>
     </div>
   );
