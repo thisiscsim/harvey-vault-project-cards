@@ -398,15 +398,6 @@ export default function StubhubIPOFilingPage() {
     setReviewArtifactPanelOpen(false);
   }, []);
   
-  // Switch to a specific chat
-  const switchToChat = useCallback((chatId: string) => {
-    setActiveChatId(chatId);
-    // Close any open artifact panels when switching
-    setUnifiedArtifactPanelOpen(false);
-    setDraftArtifactPanelOpen(false);
-    setReviewArtifactPanelOpen(false);
-  }, []);
-  
   // Ensure a chat exists before sending a message - returns the chatId to use
   const ensureChatExists = useCallback((): string => {
     const currentChatId = activeChatIdRef.current;
@@ -440,12 +431,16 @@ export default function StubhubIPOFilingPage() {
   const [isNearBottom, setIsNearBottom] = useState(true);
   const [showBottomGradient, setShowBottomGradient] = useState(false);
   
+  // Track if we just switched chats to skip animations
+  const [justSwitchedChat, setJustSwitchedChat] = useState(false);
+  
   // Artifact panel state
   const [unifiedArtifactPanelOpen, setUnifiedArtifactPanelOpen] = useState(false);
   const [currentArtifactType, setCurrentArtifactType] = useState<'draft' | 'review' | null>(null);
   const [selectedDraftArtifact, setSelectedDraftArtifact] = useState<{ title: string; subtitle: string } | null>(null);
   const [selectedReviewArtifact, setSelectedReviewArtifact] = useState<{ title: string; subtitle: string } | null>(null);
   const [draftArtifactPanelOpen, setDraftArtifactPanelOpen] = useState(false);
+  const [draftContentType, setDraftContentType] = useState<'s1-shell' | 'memorandum'>('memorandum');
   const [reviewArtifactPanelOpen, setReviewArtifactPanelOpen] = useState(false);
   
   // Artifact title editing
@@ -516,6 +511,67 @@ export default function StubhubIPOFilingPage() {
   // Check if any artifact panel is open
   const anyArtifactPanelOpen = draftArtifactPanelOpen || reviewArtifactPanelOpen || unifiedArtifactPanelOpen;
   
+  // Switch to a specific chat
+  const switchToChat = useCallback((chatId: string) => {
+    // Mark that we're switching chats to skip animations
+    setJustSwitchedChat(true);
+    setActiveChatId(chatId);
+    
+    // Reset the flag after a short delay to allow new messages to animate
+    setTimeout(() => setJustSwitchedChat(false), 100);
+    
+    // Find the chat we're switching to
+    const targetChat = chatThreads.find(c => c.id === chatId);
+    if (!targetChat) {
+      setUnifiedArtifactPanelOpen(false);
+      setDraftArtifactPanelOpen(false);
+      setReviewArtifactPanelOpen(false);
+      return;
+    }
+    
+    // Look for artifact in the target chat's messages
+    let foundDraftArtifact: { title: string; subtitle: string } | null = null;
+    let foundReviewArtifact: { title: string; subtitle: string } | null = null;
+    
+    for (const msg of targetChat.messages) {
+      if (msg.artifactData) {
+        if (msg.artifactData.variant === 'draft') {
+          foundDraftArtifact = { title: msg.artifactData.title, subtitle: msg.artifactData.subtitle };
+        } else {
+          foundReviewArtifact = { title: msg.artifactData.title, subtitle: msg.artifactData.subtitle };
+        }
+      }
+      if (msg.reviewTableArtifactData) {
+        foundReviewArtifact = { title: msg.reviewTableArtifactData.title, subtitle: msg.reviewTableArtifactData.subtitle };
+      }
+    }
+    
+    // If any artifact panel was open, try to switch to the target chat's artifact
+    if (unifiedArtifactPanelOpen) {
+      if (foundDraftArtifact) {
+        setSelectedDraftArtifact(foundDraftArtifact);
+        setCurrentArtifactType('draft');
+        setDraftArtifactPanelOpen(true);
+        setReviewArtifactPanelOpen(false);
+        // Set content type based on artifact title
+        setDraftContentType(foundDraftArtifact.title.toLowerCase().includes('s-1') ? 's1-shell' : 'memorandum');
+      } else if (foundReviewArtifact) {
+        setSelectedReviewArtifact(foundReviewArtifact);
+        setCurrentArtifactType('review');
+        setReviewArtifactPanelOpen(true);
+        setDraftArtifactPanelOpen(false);
+      } else {
+        // No artifact in target chat, close all panels
+        setUnifiedArtifactPanelOpen(false);
+        setDraftArtifactPanelOpen(false);
+        setReviewArtifactPanelOpen(false);
+        setSelectedDraftArtifact(null);
+        setSelectedReviewArtifact(null);
+        setCurrentArtifactType(null);
+      }
+    }
+  }, [chatThreads, unifiedArtifactPanelOpen, setActiveChatId]);
+  
   // Shared animation configuration for consistency
   const PANEL_ANIMATION = {
     duration: 0.3,
@@ -534,6 +590,11 @@ export default function StubhubIPOFilingPage() {
   const [chatWidth, setChatWidth] = useState(401);
   const [isResizing, setIsResizing] = useState(false);
   const [isHoveringResizer, setIsHoveringResizer] = useState(false);
+  
+  // Chat tabs overflow state
+  const chatTabsRef = useRef<HTMLDivElement>(null);
+  const [showLeftTabGradient, setShowLeftTabGradient] = useState(false);
+  const [showRightTabGradient, setShowRightTabGradient] = useState(false);
   
   // Drawer resize state
   const [drawerWidth, setDrawerWidth] = useState(DEFAULT_DRAWER_WIDTH);
@@ -1340,6 +1401,8 @@ export default function StubhubIPOFilingPage() {
                 setUnifiedArtifactPanelOpen(true);
                 setDraftArtifactPanelOpen(true);
                 setReviewArtifactPanelOpen(false);
+                // Set content type based on artifact title
+                setDraftContentType(artifactTitle.toLowerCase().includes('s-1') ? 's1-shell' : 'memorandum');
               }, 300);
               
               setTimeout(() => scrollToBottom(), 100);
@@ -1629,6 +1692,22 @@ export default function StubhubIPOFilingPage() {
       });
     }
   }, [shouldTriggerExpand]);
+
+  // Check chat tabs overflow
+  const checkTabsOverflow = useCallback(() => {
+    if (chatTabsRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = chatTabsRef.current;
+      setShowLeftTabGradient(scrollLeft > 0);
+      setShowRightTabGradient(scrollLeft + clientWidth < scrollWidth - 1);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkTabsOverflow();
+    // Re-check on resize
+    window.addEventListener('resize', checkTabsOverflow);
+    return () => window.removeEventListener('resize', checkTabsOverflow);
+  }, [checkTabsOverflow, chatThreads]);
 
   // Container ref for resize calculations
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1937,9 +2016,19 @@ export default function StubhubIPOFilingPage() {
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             {/* Chat Header - show when there are chat threads */}
               {chatThreads.length > 0 && (
-                <div className="px-4 py-3 border-b border-border-base flex items-center justify-between" style={{ height: '52px' }}>
+                <div className="px-4 py-3 border-b border-border-base flex items-center gap-1" style={{ height: '52px' }}>
                   {/* Chat Tabs */}
-                  <div className="flex items-center gap-1 overflow-x-auto flex-1 min-w-0 max-w-[calc(100%-48px)]" style={{ flexWrap: 'nowrap', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  <div className="relative flex-1 min-w-0">
+                    {/* Left fade gradient */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-bg-base to-transparent pointer-events-none z-10 transition-opacity duration-200 ${showLeftTabGradient ? 'opacity-100' : 'opacity-0'}`} />
+                    {/* Right fade gradient */}
+                    <div className={`absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-bg-base to-transparent pointer-events-none z-10 transition-opacity duration-200 ${showRightTabGradient ? 'opacity-100' : 'opacity-0'}`} />
+                    <div 
+                      ref={chatTabsRef}
+                      onScroll={checkTabsOverflow}
+                      className="flex items-center gap-1 overflow-x-auto" 
+                      style={{ flexWrap: 'nowrap', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
                     {chatThreads.map((thread) => (
                       <div
                         key={thread.id}
@@ -1952,7 +2041,7 @@ export default function StubhubIPOFilingPage() {
                         style={{ maxWidth: '200px' }}
                       >
                         <button
-                          onClick={() => setActiveChatId(thread.id)}
+                          onClick={() => switchToChat(thread.id)}
                           className={cn(
                             "text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis",
                             thread.id === activeChatId
@@ -2000,6 +2089,7 @@ export default function StubhubIPOFilingPage() {
                         )}
                       </div>
                     ))}
+                    </div>
                   </div>
                   <TooltipProvider>
                     <Tooltip>
@@ -2136,7 +2226,7 @@ export default function StubhubIPOFilingPage() {
                         {/* Or Divider */}
                         <div className="w-[600px] flex items-center gap-2">
                           <div className="flex-1 h-px bg-border-base" />
-                          <span className="text-[10px] leading-[14px] text-fg-muted">Or</span>
+                          <span className="text-[10px] leading-[14px] text-fg-muted">OR</span>
                           <div className="flex-1 h-px bg-border-base" />
                         </div>
 
@@ -2158,7 +2248,7 @@ export default function StubhubIPOFilingPage() {
                                 onClick={() => fileInputRef.current?.click()}
                                 className="gap-1.5 h-7"
                               >
-                                <CloudUpload size={16} />
+                                <SvgIcon src="/central_icons/Upload.svg" alt="Upload" width={16} height={16} className="text-white" />
                                 Upload files
                               </Button>
                               <Button 
@@ -2167,9 +2257,7 @@ export default function StubhubIPOFilingPage() {
                                 onClick={() => setIsIManagePickerOpen(true)}
                                 className="gap-1.5 h-7"
                               >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M8 5.5V10.5M10.5 8H5.5M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2C11.3137 2 14 4.68629 14 8Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
+                                <SvgIcon src="/central_icons/Integrations.svg" alt="Integrations" width={16} height={16} className="text-fg-base" />
                                 Connect integrations
                               </Button>
                             </div>
@@ -2198,9 +2286,7 @@ export default function StubhubIPOFilingPage() {
                                 size="small"
                                 className="gap-1.5 h-7"
                               >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M14 2L7.5 8.5M14 2L9.5 14L7.5 8.5M14 2L2 6.5L7.5 8.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
+                                <SvgIcon src="/central_icons/Send.svg" alt="Send" width={16} height={16} className="text-fg-base" />
                                 Send invite
                               </Button>
                             </div>
@@ -2308,7 +2394,7 @@ export default function StubhubIPOFilingPage() {
                                           {/* Thinking State - skip for SEC search step (it has its own UI) */}
                                           {showThinking && !isSecSearchStep && (
                                             <motion.div
-                                              initial={{ opacity: 0, y: 10 }}
+                                              initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                               animate={{ opacity: 1, y: 0 }}
                                               transition={{ duration: 0.3, ease: "easeOut" }}
                                             >
@@ -2326,7 +2412,7 @@ export default function StubhubIPOFilingPage() {
                                           {/* Todo List Response (for step 2) */}
                                           {isTodosStep && showResponse && message.showResearchTodos && message.researchTodos && (
                                             <motion.div
-                                              initial={{ opacity: 0, y: 10 }}
+                                              initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                               animate={{ opacity: 1, y: 0 }}
                                               transition={{ duration: 0.4, ease: "easeOut" }}
                                               className="pl-2 space-y-3"
@@ -2336,9 +2422,9 @@ export default function StubhubIPOFilingPage() {
                                                 {message.researchTodos.map((todo, todoIdx) => (
                                                   <motion.div
                                                     key={todo.id}
-                                                    initial={{ opacity: 0, x: -10 }}
+                                                    initial={justSwitchedChat ? false : { opacity: 0, x: -10 }}
                                                     animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ duration: 0.3, delay: todoIdx * 0.1 }}
+                                                    transition={{ duration: 0.3, delay: justSwitchedChat ? 0 : todoIdx * 0.1 }}
                                                     className="flex items-center gap-1.5 pr-[10px] py-1 rounded"
                                                   >
                                                     {/* Status indicator */}
@@ -2395,7 +2481,7 @@ export default function StubhubIPOFilingPage() {
                                             
                                             return (
                                               <motion.div
-                                                initial={{ opacity: 0, y: 10 }}
+                                                initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
                                               >
@@ -2408,7 +2494,7 @@ export default function StubhubIPOFilingPage() {
                                                   customContent={
                                                     <motion.div 
                                                       className="mt-3"
-                                                      initial={{ opacity: 0 }}
+                                                      initial={justSwitchedChat ? false : { opacity: 0 }}
                                                       animate={{ opacity: 1 }}
                                                       transition={{ duration: 0.3, ease: "easeOut" }}
                                                     >
@@ -2416,12 +2502,12 @@ export default function StubhubIPOFilingPage() {
                                                         {secSearchStep.content.documents.map((doc, idx) => (
                                                           <motion.div
                                                             key={`sec-doc-${stepIdx}-${idx}`}
-                                                            initial={{ opacity: 0, y: 4 }}
+                                                            initial={justSwitchedChat ? false : { opacity: 0, y: 4 }}
                                                             animate={{ opacity: 1, y: 0 }}
                                                             transition={{ 
                                                               duration: 0.2, 
                                                               ease: "easeOut",
-                                                              delay: Math.floor(idx / 3) * 0.1
+                                                              delay: justSwitchedChat ? 0 : Math.floor(idx / 3) * 0.1
                                                             }}
                                                             className="inline-flex items-center gap-1.5 px-2 py-1.5 border border-border-base rounded-md text-xs"
                                                           >
@@ -2448,9 +2534,9 @@ export default function StubhubIPOFilingPage() {
                                                 {!secSearchStep.loadingState.isLoading && secSearchStep.completeMessage && (
                                                   <motion.div 
                                                     className="mt-2 text-sm text-fg-base leading-relaxed pl-2 whitespace-pre-wrap"
-                                                    initial={{ opacity: 0, y: 10 }}
+                                                    initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+                                                    transition={{ duration: 0.4, ease: "easeOut", delay: justSwitchedChat ? 0 : 0.2 }}
                                                   >
                                                     {secSearchStep.completeMessage}
                                                   </motion.div>
@@ -2462,7 +2548,7 @@ export default function StubhubIPOFilingPage() {
                                           {/* Regular Text Response (for step 1 and others) */}
                                           {!isTodosStep && !isSecSearchStep && showResponse && step.response && (
                                             <motion.div
-                                              initial={{ opacity: 0, y: 10 }}
+                                              initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                               animate={{ opacity: 1, y: 0 }}
                                               transition={{ duration: 0.4, ease: "easeOut" }}
                                               className="text-sm text-fg-base leading-relaxed pl-2"
@@ -2474,9 +2560,9 @@ export default function StubhubIPOFilingPage() {
                                           {/* Optional Buttons */}
                                           {showResponse && step.buttons && step.buttons.length > 0 && (
                                             <motion.div
-                                              initial={{ opacity: 0, y: 10 }}
+                                              initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                               animate={{ opacity: 1, y: 0 }}
-                                              transition={{ duration: 0.3, ease: "easeOut", delay: 0.2 }}
+                                              transition={{ duration: 0.3, ease: "easeOut", delay: justSwitchedChat ? 0 : 0.2 }}
                                               className="flex flex-wrap gap-2 pl-2"
                                             >
                                               {step.buttons.map((btn, btnIdx) => (
@@ -2498,9 +2584,9 @@ export default function StubhubIPOFilingPage() {
                                     {/* Action buttons after all steps complete */}
                                     {!message.isLoading && (
                                       <motion.div
-                                        initial={{ opacity: 0 }}
+                                        initial={justSwitchedChat ? false : { opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        transition={{ duration: 0.3, delay: 0.2 }}
+                                        transition={{ duration: 0.3, delay: justSwitchedChat ? 0 : 0.2 }}
                                         className="flex items-center justify-between mt-3"
                                       >
                                         <div className="flex items-center">
@@ -2556,7 +2642,7 @@ export default function StubhubIPOFilingPage() {
                                 {!message.researchFlowContent && !message.isLoading && message.content && (
                                   <AnimatePresence>
                                     <motion.div
-                                      initial={{ opacity: 0, y: 10 }}
+                                      initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                       animate={{ opacity: 1, y: 0 }}
                                       transition={{ duration: 0.4, ease: "easeOut" }}
                                     >
@@ -2590,6 +2676,9 @@ export default function StubhubIPOFilingPage() {
                                                   setSelectedDraftArtifact(artifactData);
                                                   setDraftArtifactPanelOpen(true);
                                                   setReviewArtifactPanelOpen(false);
+                                                  // Set content type based on artifact title
+                                                  const title = message.artifactData?.title || '';
+                                                  setDraftContentType(title.toLowerCase().includes('s-1') ? 's1-shell' : 'memorandum');
                                                 } else {
                                                   setSelectedReviewArtifact(artifactData);
                                                   setReviewArtifactPanelOpen(true);
@@ -2633,7 +2722,7 @@ export default function StubhubIPOFilingPage() {
                                               <motion.div 
                                                 key="file-review-content"
                                                 className="mt-3"
-                                                initial={{ opacity: 0, y: 10 }}
+                                                initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
                                               >
@@ -2646,7 +2735,7 @@ export default function StubhubIPOFilingPage() {
                                                   customContent={
                                                     <motion.div 
                                                       className="mt-3"
-                                                      initial={{ opacity: 0 }}
+                                                      initial={justSwitchedChat ? false : { opacity: 0 }}
                                                       animate={{ opacity: 1 }}
                                                       transition={{ duration: 0.3, ease: "easeOut" }}
                                                     >
@@ -2654,12 +2743,12 @@ export default function StubhubIPOFilingPage() {
                                                         {message.fileReviewContent.files.map((file, idx) => (
                                                           <motion.div
                                                             key={`file-chip-${idx}`}
-                                                            initial={{ opacity: 0, y: 4 }}
+                                                            initial={justSwitchedChat ? false : { opacity: 0, y: 4 }}
                                                             animate={{ opacity: 1, y: 0 }}
                                                             transition={{ 
                                                               duration: 0.2, 
                                                               ease: "easeOut",
-                                                              delay: Math.floor(idx / 3) * 0.1
+                                                              delay: justSwitchedChat ? 0 : Math.floor(idx / 3) * 0.1
                                                             }}
                                                             className="inline-flex items-center gap-1.5 px-2 py-1.5 border border-border-base rounded-md text-xs"
                                                           >
@@ -2697,7 +2786,7 @@ export default function StubhubIPOFilingPage() {
                                               <motion.div 
                                                 key="file-review-complete-message"
                                                 className="mt-1 text-sm text-fg-base leading-relaxed pl-2"
-                                                initial={{ opacity: 0, y: 10 }}
+                                                initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
                                               >
@@ -2719,15 +2808,15 @@ export default function StubhubIPOFilingPage() {
                                               })() && (
                                                 <motion.div 
                                                   className="mt-3 flex gap-2 pl-2"
-                                                  initial={{ opacity: 0, y: 10 }}
+                                                  initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                   animate={{ opacity: 1, y: 0 }}
-                                                  transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
+                                                  transition={{ duration: 0.4, ease: "easeOut", delay: justSwitchedChat ? 0 : 0.1 }}
                                                 >
                                                   <AnimatePresence mode="popLayout">
                                                     {(!message.selectedCounselFilter || message.selectedCounselFilter === 'latham') && (
                                                       <motion.button
                                                         key="latham-button"
-                                                        initial={{ opacity: 0, scale: 0.95 }}
+                                                        initial={justSwitchedChat ? false : { opacity: 0, scale: 0.95 }}
                                                         animate={{ opacity: 1, scale: 1 }}
                                                         exit={{ opacity: 0, scale: 0.95 }}
                                                         transition={{ duration: 0.2, ease: "easeOut" }}
@@ -2841,7 +2930,7 @@ export default function StubhubIPOFilingPage() {
                                                     {(!message.selectedCounselFilter || message.selectedCounselFilter === 'nofilter') && (
                                                       <motion.button
                                                         key="nofilter-button"
-                                                        initial={{ opacity: 0, scale: 0.95 }}
+                                                        initial={justSwitchedChat ? false : { opacity: 0, scale: 0.95 }}
                                                         animate={{ opacity: 1, scale: 1 }}
                                                         exit={{ opacity: 0, scale: 0.95 }}
                                                         transition={{ duration: 0.2, ease: "easeOut" }}
@@ -2959,7 +3048,7 @@ export default function StubhubIPOFilingPage() {
                                               <motion.div 
                                                 key="draft-generation"
                                                 className="mt-3.5"
-                                                initial={{ opacity: 0, y: 10 }}
+                                                initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
                                               >
@@ -2981,9 +3070,9 @@ export default function StubhubIPOFilingPage() {
                                                 {!message.draftGenerationLoadingState?.isLoading && message.artifactData && (
                                                   <motion.div 
                                                     className="mt-2.5 pl-2"
-                                                    initial={{ opacity: 0, y: 10 }}
+                                                    initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+                                                    transition={{ duration: 0.4, ease: "easeOut", delay: justSwitchedChat ? 0 : 0.2 }}
                                                   >
                                                     <ReviewTableArtifactCard
                                                       title={message.artifactData.title}
@@ -3001,6 +3090,9 @@ export default function StubhubIPOFilingPage() {
                                                         });
                                                         setDraftArtifactPanelOpen(true);
                                                         setReviewArtifactPanelOpen(false);
+                                                        // Set content type based on artifact title
+                                                        const title = message.artifactData?.title || '';
+                                                        setDraftContentType(title.toLowerCase().includes('s-1') ? 's1-shell' : 'memorandum');
                                                       }}
                                                     />
                                                   </motion.div>
@@ -3015,7 +3107,7 @@ export default function StubhubIPOFilingPage() {
                                               <motion.div 
                                                 key="time-window-thinking"
                                                 className="mt-3.5"
-                                                initial={{ opacity: 0, y: 10 }}
+                                                initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
                                               >
@@ -3036,9 +3128,9 @@ export default function StubhubIPOFilingPage() {
                                                 {message.timeWindowMessage && (
                                                   <motion.div 
                                                     className="mt-1 text-sm text-fg-base leading-relaxed pl-2"
-                                                    initial={{ opacity: 0, y: 10 }}
+                                                    initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+                                                    transition={{ duration: 0.4, ease: "easeOut", delay: justSwitchedChat ? 0 : 0.2 }}
                                                   >
                                                     {message.timeWindowMessage}
                                                   </motion.div>
@@ -3053,7 +3145,7 @@ export default function StubhubIPOFilingPage() {
                                               <motion.div 
                                                 key="edgar-review"
                                                 className="mt-3.5"
-                                                initial={{ opacity: 0, y: 10 }}
+                                                initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
                                               >
@@ -3066,7 +3158,7 @@ export default function StubhubIPOFilingPage() {
                                                   customContent={
                                                     <motion.div 
                                                       className="mt-3"
-                                                      initial={{ opacity: 0 }}
+                                                      initial={justSwitchedChat ? false : { opacity: 0 }}
                                                       animate={{ opacity: 1 }}
                                                       transition={{ duration: 0.3, ease: "easeOut" }}
                                                     >
@@ -3074,12 +3166,12 @@ export default function StubhubIPOFilingPage() {
                                                         {message.edgarReviewContent.filings.map((filing, idx) => (
                                                           <motion.div
                                                             key={`filing-chip-${idx}`}
-                                                            initial={{ opacity: 0, y: 4 }}
+                                                            initial={justSwitchedChat ? false : { opacity: 0, y: 4 }}
                                                             animate={{ opacity: 1, y: 0 }}
                                                             transition={{ 
                                                               duration: 0.2, 
                                                               ease: "easeOut",
-                                                              delay: Math.floor(idx / 3) * 0.1
+                                                              delay: justSwitchedChat ? 0 : Math.floor(idx / 3) * 0.1
                                                             }}
                                                             className="inline-flex items-center gap-1.5 px-2 py-1.5 border border-border-base rounded-md text-xs"
                                                           >
@@ -3107,9 +3199,9 @@ export default function StubhubIPOFilingPage() {
                                                   <>
                                                     <motion.div 
                                                       className="mt-2 text-sm text-fg-base leading-relaxed pl-2"
-                                                      initial={{ opacity: 0, y: 10 }}
+                                                      initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                       animate={{ opacity: 1, y: 0 }}
-                                                      transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+                                                      transition={{ duration: 0.4, ease: "easeOut", delay: justSwitchedChat ? 0 : 0.2 }}
                                                     >
                                                       {message.edgarReviewCompleteMessage}
                                                     </motion.div>
@@ -3118,9 +3210,9 @@ export default function StubhubIPOFilingPage() {
                                                     {message.precedentCompaniesData && (
                                                       <motion.div 
                                                         className="mt-4 pl-2"
-                                                        initial={{ opacity: 0, y: 10 }}
+                                                        initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                         animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
+                                                        transition={{ duration: 0.4, ease: "easeOut", delay: justSwitchedChat ? 0 : 0.4 }}
                                                       >
                                                         <PrecedentCompaniesTable 
                                                           data={message.precedentCompaniesData}
@@ -3249,7 +3341,7 @@ export default function StubhubIPOFilingPage() {
                                                         <motion.div 
                                                           key="review-table-generation"
                                                           className="mt-4.5"
-                                                          initial={{ opacity: 0, y: 10 }}
+                                                          initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                           animate={{ opacity: 1, y: 0 }}
                                                           transition={{ duration: 0.4, ease: "easeOut" }}
                                                         >
@@ -3271,9 +3363,9 @@ export default function StubhubIPOFilingPage() {
                                                           {!message.reviewTableGenerationLoadingState?.isLoading && message.reviewTableMessage && (
                                                             <motion.div
                                                               className="mt-2 pl-2 text-sm text-fg-base leading-relaxed"
-                                                              initial={{ opacity: 0, y: 10 }}
+                                                              initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                               animate={{ opacity: 1, y: 0 }}
-                                                              transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+                                                              transition={{ duration: 0.4, ease: "easeOut", delay: justSwitchedChat ? 0 : 0.2 }}
                                                             >
                                                               {message.reviewTableMessage}
                                                             </motion.div>
@@ -3283,9 +3375,9 @@ export default function StubhubIPOFilingPage() {
                                                           {!message.reviewTableGenerationLoadingState?.isLoading && message.reviewTableArtifactData && (
                                                             <motion.div 
                                                               className="mt-2.5 pl-2"
-                                                              initial={{ opacity: 0, y: 10 }}
+                                                              initial={justSwitchedChat ? false : { opacity: 0, y: 10 }}
                                                               animate={{ opacity: 1, y: 0 }}
-                                                              transition={{ duration: 0.4, ease: "easeOut", delay: 0.3 }}
+                                                              transition={{ duration: 0.4, ease: "easeOut", delay: justSwitchedChat ? 0 : 0.3 }}
                                                             >
                                                               <ReviewTableArtifactCard
                                                                 title={message.reviewTableArtifactData.title}
@@ -3434,7 +3526,7 @@ export default function StubhubIPOFilingPage() {
                               maxHeight: '300px'
                             }}
                           />
-                          {!inputValue && !isInputFocused && (
+                          {!inputValue && (
                             <div className="absolute inset-0 pointer-events-none text-[#9e9b95] dark:text-[#6b6b6b] flex items-start" style={{ fontSize: '14px', lineHeight: '20px' }}>
                             <TextLoop interval={3000}>
                               <span>Research IP infringement cases…</span>
@@ -3497,28 +3589,18 @@ export default function StubhubIPOFilingPage() {
           {/* Resize Handle - only show when artifact panel is open and chat is open */}
           {anyArtifactPanelOpen && chatOpen && (
             <div 
-              className="relative group"
+              className={`relative group w-px cursor-col-resize transition-colors flex-shrink-0 ${
+                (isPastCollapseThreshold || isPastExpandThreshold)
+                  ? 'bg-fg-base'
+                  : (isHoveringResizer || isResizing ? 'bg-border-strong' : 'bg-border-base')
+              }`}
               onMouseEnter={() => setIsHoveringResizer(true)}
               onMouseLeave={() => setIsHoveringResizer(false)}
               onMouseDown={handleResizeMouseDown}
-              style={{
-                width: '1px',
-                backgroundColor: (isPastCollapseThreshold || isPastExpandThreshold) 
-                  ? '#262626' // neutral-800 when past threshold
-                  : (isHoveringResizer || isResizing ? '#d4d4d4' : '#e5e5e5'),
-                cursor: 'col-resize',
-                transition: 'background-color 0.15s ease',
-                flexShrink: 0,
-              }}
             >
               {/* Invisible wider hit area for easier grabbing */}
               <div 
-                className="absolute inset-y-0"
-                style={{
-                  left: '-4px',
-                  right: '-4px',
-                  cursor: 'col-resize',
-                }}
+                className="absolute inset-y-0 -left-1 -right-1 cursor-col-resize"
               />
             </div>
           )}
@@ -3544,7 +3626,7 @@ export default function StubhubIPOFilingPage() {
                   opacity: { duration: 0.15, ease: "easeOut" },
                   flex: PANEL_ANIMATION
                 }}
-                className="border-l border-border-base flex flex-col min-w-0 overflow-hidden"
+                className="flex flex-col min-w-0 overflow-hidden"
                 style={{ 
                   flexShrink: 0,
                   minWidth: chatOpen ? 300 : undefined
@@ -3576,6 +3658,7 @@ export default function StubhubIPOFilingPage() {
                       artifactTitleInputRef={draftArtifactTitleInputRef}
                       sourcesDrawerOpen={false}
                       onSourcesDrawerOpenChange={() => {}}
+                      contentType={draftContentType}
                     />
                   ) : (
                     <ReviewArtifactPanel

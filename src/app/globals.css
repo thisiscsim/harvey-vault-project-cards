@@ -989,3 +989,21 @@ th:has(.dynamic-column-header) {
   animation: grouping-shimmer 2.5s ease-in-out infinite;
 }
 
+/* ========================================
+   PROGRESS BAR GROW ANIMATION
+   ======================================== */
+
+@keyframes grow-width {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-grow-width {
+  transform-origin: left;
+  animation: grow-width 0.8s ease-out forwards;
+}
+

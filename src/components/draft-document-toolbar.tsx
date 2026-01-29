@@ -291,24 +291,6 @@ export default function DraftDocumentToolbar({ chatOpen, onToggleChat, onCloseAr
         </div>
       </div>
       
-      <div className="flex items-center gap-2">
-        {/* Close button */}
-        <button 
-          onClick={chatOpen ? onCloseArtifact : undefined}
-          disabled={!chatOpen}
-          className={`w-6 h-6 flex items-center justify-center rounded-[6px] transition-colors ${
-            chatOpen 
-              ? 'hover:bg-bg-subtle text-fg-subtle' 
-              : 'text-fg-disabled cursor-not-allowed'
-          }`}
-          title={chatOpen ? "Close" : "Open assistant to close artifact"}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18"/>
-            <path d="M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
     </div>
   );
 }

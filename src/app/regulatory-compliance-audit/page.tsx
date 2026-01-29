@@ -849,7 +849,7 @@ export default function RegulatoryComplianceAuditPage() {
             </div>
             
             {/* Main Content Panel */}
-            <div className="flex-1 flex flex-col overflow-y-auto">
+            <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-w-0">
               {/* Tabs */}
               <div className="px-6 pt-4">
                 <div className="flex items-center gap-1">
@@ -892,7 +892,7 @@ export default function RegulatoryComplianceAuditPage() {
               </div>
 
               {/* Content Area */}
-              <div className="flex-1 px-6 py-6">
+              <div className="flex-1 px-6 py-6 min-w-0">
                 {activeTab === "overview" && (
                 <div>
                   {/* Dashboard Cards */}
@@ -1297,7 +1297,7 @@ export default function RegulatoryComplianceAuditPage() {
                       <div className="flex items-center h-full pr-3 py-3 shrink-0">
                         <button
                           onClick={toggleAllRows}
-                          className="w-4 h-4 rounded border border-black/40 dark:border-white/40 flex items-center justify-center hover:border-black/60 dark:hover:border-white/60 transition-colors"
+                          className="w-4 h-4 rounded-[4px] border border-border-strong bg-bg-base flex items-center justify-center hover:border-fg-muted transition-colors"
                         >
                           {selectedRows.size === files.length && files.length > 0 && (
                             <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
@@ -1369,8 +1369,8 @@ export default function RegulatoryComplianceAuditPage() {
                             <div className="flex items-center h-full pr-3 py-3 shrink-0 z-10">
                               <button
                                 onClick={() => toggleRowSelection(file.id)}
-                                className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                  isSelected ? 'border-fg-base bg-fg-base' : 'border-black/40 dark:border-white/40 hover:border-black/60 dark:hover:border-white/60'
+                                className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors ${
+                                  isSelected ? 'border-bg-interactive bg-bg-interactive' : 'border-border-strong bg-bg-base hover:border-fg-muted'
                                 }`}
                               >
                                 {isSelected && (
@@ -1509,13 +1509,13 @@ export default function RegulatoryComplianceAuditPage() {
                               <option value={100}>100</option>
                             </select>
                             <svg 
-                              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" 
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-fg-muted" 
                               width="16" 
                               height="16" 
                               viewBox="0 0 16 16" 
                               fill="none"
                             >
-                              <path d="M4 6L8 10L12 6" stroke="#8F8C85" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                           </div>
                         </div>
@@ -1524,7 +1524,7 @@ export default function RegulatoryComplianceAuditPage() {
                           <button 
                             onClick={() => setCurrentPage(1)}
                             disabled={currentPage === 1}
-                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md text-fg-base hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <path d="M9 5L6 8L9 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1534,7 +1534,7 @@ export default function RegulatoryComplianceAuditPage() {
                           <button 
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
-                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md text-fg-base hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <path d="M10 5L7 8L10 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1543,7 +1543,7 @@ export default function RegulatoryComplianceAuditPage() {
                           <button 
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages || totalPages === 0}
-                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md text-fg-base hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <path d="M6 5L9 8L6 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1552,7 +1552,7 @@ export default function RegulatoryComplianceAuditPage() {
                           <button 
                             onClick={() => setCurrentPage(totalPages)}
                             disabled={currentPage === totalPages || totalPages === 0}
-                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md text-fg-base hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                               <path d="M7 5L10 8L7 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1597,23 +1597,23 @@ export default function RegulatoryComplianceAuditPage() {
                     {/* Header Row */}
                     <div className="flex items-center h-10 border-b border-border-base sticky top-0 bg-bg-base z-20">
                       {/* Name Header */}
-                      <div className="flex-1 flex items-center gap-2 h-full px-1 py-3">
+                      <div className="flex-[2] min-w-[200px] flex items-center gap-2 h-full px-1 py-3">
                         <span className="text-xs font-medium text-fg-subtle leading-4">Name</span>
                       </div>
                       {/* Query Type Header */}
-                      <div className="w-[280px] flex items-center gap-2 h-full px-1 py-3 shrink-0">
+                      <div className="flex-1 min-w-[180px] flex items-center gap-2 h-full px-1 py-3">
                         <span className="text-xs font-medium text-fg-muted leading-4">Query type</span>
                       </div>
                       {/* Last Modified Header */}
-                      <div className="w-[140px] flex items-center gap-2 h-full px-1 py-3 shrink-0">
+                      <div className="flex-1 min-w-[100px] flex items-center gap-2 h-full px-1 py-3">
                         <span className="text-xs font-medium text-fg-muted leading-4">Last modified</span>
                       </div>
                       {/* Created On Header */}
-                      <div className="w-[140px] flex items-center gap-2 h-full px-1 py-3 shrink-0">
+                      <div className="flex-1 min-w-[100px] flex items-center gap-2 h-full px-1 py-3">
                         <span className="text-xs font-medium text-fg-muted leading-4">Created on</span>
                       </div>
                       {/* Created By Header */}
-                      <div className="w-[140px] flex items-center gap-2 h-full px-1 py-3 shrink-0">
+                      <div className="flex-1 min-w-[100px] flex items-center gap-2 h-full px-1 py-3">
                         <span className="text-xs font-medium text-fg-muted leading-4">Created by</span>
                       </div>
                     </div>
@@ -1641,12 +1641,12 @@ export default function RegulatoryComplianceAuditPage() {
                             )}
                             
                             {/* Name Cell */}
-                            <div className="flex-1 flex items-center gap-2 h-full px-1 py-3 overflow-hidden z-10">
+                            <div className="flex-[2] min-w-[200px] flex items-center gap-2 h-full px-1 py-3 overflow-hidden z-10">
                               <span className="text-sm text-fg-base leading-5 truncate">{query.name}</span>
                             </div>
                             
                             {/* Query Type Cell */}
-                            <div className="w-[280px] flex items-center gap-1.5 h-full px-1 py-3 shrink-0 z-10">
+                            <div className="flex-1 min-w-[180px] flex items-center gap-1.5 h-full px-1 py-3 z-10">
                               {query.chips.map((chip, idx) => (
                                 <div key={idx} className="flex items-center gap-1 bg-bg-subtle rounded-full px-2 py-1">
                                   <SvgIcon src={chip.icon} alt={chip.label} width={14} height={14} className="text-fg-subtle shrink-0" />
@@ -1656,21 +1656,21 @@ export default function RegulatoryComplianceAuditPage() {
                             </div>
                             
                             {/* Last Modified Cell */}
-                            <div className="w-[140px] flex items-center h-full px-1 py-3 shrink-0 z-10">
+                            <div className="flex-1 min-w-[100px] flex items-center h-full px-1 py-3 z-10">
                               <span className="text-sm text-fg-muted leading-5">
                                 {query.lastModified.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                               </span>
                             </div>
                             
                             {/* Created On Cell */}
-                            <div className="w-[140px] flex items-center h-full px-1 py-3 shrink-0 z-10">
+                            <div className="flex-1 min-w-[100px] flex items-center h-full px-1 py-3 z-10">
                               <span className="text-sm text-fg-muted leading-5">
                                 {query.createdOn.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                               </span>
                             </div>
                             
                             {/* Created By Cell */}
-                            <div className="w-[140px] flex items-center h-full px-1 py-3 shrink-0 z-10">
+                            <div className="flex-1 min-w-[100px] flex items-center h-full px-1 py-3 z-10">
                               <span className="text-sm text-fg-muted leading-5">{query.createdBy}</span>
                             </div>
                             

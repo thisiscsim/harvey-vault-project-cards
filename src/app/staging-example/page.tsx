@@ -777,7 +777,7 @@ function StagingExampleContent() {
                           <div className="flex items-center h-full pr-3 py-3 shrink-0">
                             <button
                               onClick={toggleAllRows}
-                              className="w-4 h-4 rounded border border-black/40 flex items-center justify-center hover:border-black/60 transition-colors"
+                              className="w-4 h-4 rounded-[4px] border border-border-strong bg-bg-base flex items-center justify-center hover:border-fg-muted transition-colors"
                             >
                               {selectedRows.size === files.length && files.length > 0 && (
                                 <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
@@ -849,8 +849,8 @@ function StagingExampleContent() {
                                 <div className="flex items-center h-full pr-3 py-3 shrink-0 z-10">
                                   <button
                                     onClick={() => toggleRowSelection(file.id)}
-                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                      isSelected ? 'border-fg-base bg-fg-base' : 'border-black/40 hover:border-black/60'
+                                    className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors ${
+                                      isSelected ? 'border-bg-interactive bg-bg-interactive' : 'border-border-strong bg-bg-base hover:border-fg-muted'
                                     }`}
                                   >
                                     {isSelected && (
@@ -989,13 +989,13 @@ function StagingExampleContent() {
                                   <option value={100}>100</option>
                                 </select>
                                 <svg 
-                                  className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" 
+                                  className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-fg-muted" 
                                   width="16" 
                                   height="16" 
                                   viewBox="0 0 16 16" 
                                   fill="none"
                                 >
-                                  <path d="M4 6L8 10L12 6" stroke="#8F8C85" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                                  <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                               </div>
                             </div>
@@ -1004,7 +1004,7 @@ function StagingExampleContent() {
                               <button 
                                 onClick={() => setCurrentPage(1)}
                                 disabled={currentPage === 1}
-                                className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md text-fg-base hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                               >
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                   <path d="M9 5L6 8L9 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1014,7 +1014,7 @@ function StagingExampleContent() {
                               <button 
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md text-fg-base hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                               >
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                   <path d="M10 5L7 8L10 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1023,7 +1023,7 @@ function StagingExampleContent() {
                               <button 
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages || totalPages === 0}
-                                className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md text-fg-base hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                               >
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                   <path d="M6 5L9 8L6 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1032,7 +1032,7 @@ function StagingExampleContent() {
                               <button 
                                 onClick={() => setCurrentPage(totalPages)}
                                 disabled={currentPage === totalPages || totalPages === 0}
-                                className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="w-8 h-8 flex items-center justify-center border border-border-base rounded-md text-fg-base hover:bg-bg-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                               >
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                   <path d="M7 5L10 8L7 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>

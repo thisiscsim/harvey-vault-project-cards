@@ -1482,7 +1482,7 @@ export default function ReviewArtifactPanel({
   return (
     <>
       <motion.div 
-        initial={{ width: 0, opacity: 0 }}
+        initial={false}
         animate={{ width: '100%', opacity: 1 }}
         exit={{ width: 0, opacity: 0 }}
         transition={{
@@ -1547,22 +1547,16 @@ export default function ReviewArtifactPanel({
           </div>
           
           <div className="flex gap-2 items-center">
-            {/* Share Button */}
-            <button 
-              onClick={() => onShareArtifactDialogOpenChange(true)}
-              className="h-8 flex items-center gap-2 px-3 border border-border-base rounded-[8px] bg-button-neutral hover:bg-button-neutral-hover active:bg-button-neutral-pressed transition-colors text-fg-base text-sm font-normal"
-            >
-              <UserPlus size={16} className="text-fg-base" />
-              <span className="text-sm font-normal">Share</span>
-            </button>
-            {/* Export Button */}
-            <button 
-              className="h-8 flex items-center gap-2 px-3 border border-border-base rounded-[8px] bg-button-neutral hover:bg-button-neutral-hover active:bg-button-neutral-pressed transition-colors text-fg-base text-sm font-normal"
+            {/* Export Button - matches Draft Artifact header style */}
+            <Button 
+              variant="outline" 
+              size="medium" 
+              className="gap-1.5"
               onClick={() => onExportReviewDialogOpenChange(true)}
             >
-              <Download size={16} className="text-fg-base" />
-              <span className="text-sm font-normal">Export</span>
-            </button>
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
             {/* Close Button - only show when chat is open (artifact context) */}
             {chatOpen && (
               <button 
