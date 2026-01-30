@@ -347,7 +347,7 @@ export default function VaultPage() {
                 </div>
               </div>
               <div className="relative w-[250px] min-w-[128px] h-7">
-                <div className="flex items-center justify-between w-full h-full px-2 py-1.5 bg-white border border-border-base rounded-md">
+                <div className="flex items-center justify-between w-full h-full px-2 py-1.5 bg-bg-base border border-border-base rounded-md">
                   <div className="flex items-center gap-2 flex-1">
                     <Search className="w-4 h-4 text-fg-muted shrink-0" />
                     <input
@@ -358,8 +358,8 @@ export default function VaultPage() {
                       className="flex-1 bg-transparent border-none outline-none text-sm text-fg-base placeholder:text-fg-muted"
                     />
                   </div>
-                  <div className="flex items-center justify-center w-5 px-1 py-0.5 bg-[#f9f9f9] border border-[#e3e3e3] rounded">
-                    <span className="text-sm font-semibold text-[#858585] leading-4 tracking-tight">/</span>
+                  <div className="flex items-center justify-center w-5 px-1 py-0.5 bg-bg-subtle border border-border-base rounded">
+                    <span className="text-sm font-semibold text-fg-muted leading-4 tracking-tight">/</span>
                   </div>
                 </div>
               </div>
