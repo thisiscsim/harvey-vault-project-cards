@@ -97,6 +97,28 @@ export default function VaultPage() {
   const paletteDropdownButtonRef = useRef<HTMLButtonElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   
+  // Card style states
+  const [containedCards, setContainedCards] = useState(false);
+  const [condensedCards, setCondensedCards] = useState(false);
+  const [reportCards, setReportCards] = useState(false);
+  const [gradientsEnabled, setGradientsEnabled] = useState(false);
+  const [projectGradients, setProjectGradients] = useState<Record<number, string>>({});
+  const [aiImagesEnabled, setAiImagesEnabled] = useState(false);
+  const [projectAiImages, setProjectAiImages] = useState<Record<number, string>>({});
+  
+  // AI-generated branded images (stored in /public/stock/)
+  const aiBackgroundImages = [
+    '/stock/Frame.png',
+    '/stock/haplocanthosauridic__7ca69be5-4fc8-470a-8af8-ba4f3f3541bd_1.png',
+    '/stock/haplocanthosauridic__ac382051-cdaf-48b2-8b93-0df4504e2e1d_1.png',
+    '/stock/haplocanthosauridic_building_corridor_with_arches_and_shadows_5165f2fc-b1ed-497e-aacd-9f398ce426d0_1.png',
+    '/stock/haplocanthosauridic_roman_sculpture_man_moody_lighting_bc0fce74-0693-4fe5-8c50-fb300317b9f3_1.png',
+    '/stock/haplocanthosauridic_roman_sculpture_man_moody_lighting_d05fca3e-e40e-4b5d-a5e5-202493d11582_1.png',
+    '/stock/iStock-2157307277_1.png',
+    '/stock/iStock-532875194_1.png',
+    '/stock/iStock-627225530_1.png',
+  ];
+  
   // Random colors state for project cards
   const [projectColors, setProjectColors] = useState<Record<number, string>>({});
   const [colorsEnabled, setColorsEnabled] = useState(false);
@@ -139,6 +161,103 @@ export default function VaultPage() {
     setColorsEnabled(enabled);
     if (enabled) {
       generateRandomColors();
+    }
+  };
+
+  // Gradient color palettes for fluid gradients (softer, more muted tones)
+  const gradientColorSets = [
+    // Warm sunset - like image 1 (orange, red, green tones)
+    ['#E07B54', '#D4A574', '#8FB572', '#C9856B', '#A3C4A0'],
+    // Cool blue-pink - like image 2
+    ['#6B9ECF', '#E8A4B8', '#B8D4E8', '#D4B8D4', '#7EB8CF'],
+    // Soft lavender sky - like image 3
+    ['#B8C8E8', '#E8D4E8', '#8BA4CF', '#D4E0F0', '#C4B8D8'],
+    // Warm amber rust - like image 4
+    ['#D4856B', '#2C2420', '#E8C4A8', '#8B5A4A', '#C49880'],
+    // Ocean mist
+    ['#7EC8CF', '#B8E0E8', '#5BA8B8', '#D4F0F0', '#4A98A8'],
+    // Peach cream
+    ['#F0C4B8', '#E8D8D0', '#D4A090', '#F8E8E0', '#C08878'],
+    // Forest sage
+    ['#8FB88F', '#C4D4B8', '#6A9870', '#D8E8D0', '#7AAC7A'],
+    // Dusk purple
+    ['#9080A8', '#C4B8D4', '#7868A0', '#E0D8E8', '#A898C0'],
+  ];
+
+  // Generate a fluid mesh gradient CSS string (more organic, WebGL-like)
+  const generateFluidGradient = () => {
+    const colorSet = gradientColorSets[Math.floor(Math.random() * gradientColorSets.length)];
+    
+    const gradients: string[] = [];
+    
+    // Create 4-6 large, soft, overlapping elliptical gradients
+    const numBlobs = 4 + Math.floor(Math.random() * 3);
+    
+    for (let i = 0; i < numBlobs; i++) {
+      const color = colorSet[Math.floor(Math.random() * colorSet.length)];
+      // Position blobs across the area, allowing overflow
+      const x = -20 + Math.floor(Math.random() * 140);
+      const y = -20 + Math.floor(Math.random() * 140);
+      // Large elliptical shapes for organic look
+      const sizeX = 60 + Math.floor(Math.random() * 80);
+      const sizeY = 60 + Math.floor(Math.random() * 80);
+      
+      // Very soft gradient with extended fade
+      gradients.push(
+        `radial-gradient(ellipse ${sizeX}% ${sizeY}% at ${x}% ${y}%, ${color} 0%, ${color}B3 20%, ${color}4D 50%, transparent 70%)`
+      );
+    }
+    
+    // Add a soft base layer
+    const baseColor1 = colorSet[0];
+    const baseColor2 = colorSet[Math.floor(colorSet.length / 2)];
+    const baseColor3 = colorSet[colorSet.length - 1];
+    const angle = Math.floor(Math.random() * 360);
+    gradients.push(
+      `linear-gradient(${angle}deg, ${baseColor1}66 0%, ${baseColor2}4D 50%, ${baseColor3}66 100%)`
+    );
+    
+    return gradients.join(', ');
+  };
+
+  // Generate random gradients for all projects
+  const generateRandomGradients = () => {
+    const newGradients: Record<number, string> = {};
+    for (let i = 1; i <= 10; i++) {
+      newGradients[i] = generateFluidGradient();
+    }
+    setProjectGradients(newGradients);
+  };
+
+  // Toggle gradients on/off
+  const handleToggleGradients = (enabled: boolean) => {
+    setGradientsEnabled(enabled);
+    if (enabled) {
+      generateRandomGradients();
+      // Disable other background options
+      setColorsEnabled(false);
+      setAiImagesEnabled(false);
+    }
+  };
+
+  // Assign AI images to projects sequentially (no duplicates)
+  const assignAiImages = () => {
+    const newImages: Record<number, string> = {};
+    for (let i = 1; i <= Math.min(10, aiBackgroundImages.length); i++) {
+      // Assign images in order, one per project
+      newImages[i] = aiBackgroundImages[i - 1];
+    }
+    setProjectAiImages(newImages);
+  };
+
+  // Toggle AI images on/off
+  const handleToggleAiImages = (enabled: boolean) => {
+    setAiImagesEnabled(enabled);
+    if (enabled) {
+      assignAiImages();
+      // Disable other background options
+      setColorsEnabled(false);
+      setGradientsEnabled(false);
     }
   };
 
@@ -367,35 +486,148 @@ export default function VaultPage() {
             
             {/* Projects Grid */}
             <div>
-              <div className="grid grid-cols-4 gap-4">
+              <div 
+                className="grid gap-4 transition-all duration-300"
+                style={{
+                  gridTemplateColumns: condensedCards ? 'repeat(3, 1fr)' : (reportCards ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)'),
+                }}
+              >
                 {filteredProjects.map((project) => {
                   const projectColor = colorsEnabled ? projectColors[project.id] : null;
+                  const projectGradient = gradientsEnabled ? projectGradients[project.id] : null;
+                  const projectAiImage = aiImagesEnabled ? projectAiImages[project.id] : null;
+                  
+                  // Check if any background effect is active
+                  const hasBackgroundEffect = projectGradient || projectAiImage;
                   
                   // Determine icon src
                   const iconSrc = project.type === "shared" ? "/sharedFolderIcon.svg" :
                     project.type === "knowledge" ? "/knowledgeBaseIcon.svg" :
                     "/folderIcon.svg";
                   
+                  // Unified card structure with conditional styles
+                  // Determine if card has a special style (bordered)
+                  const hasBorderedStyle = condensedCards || containedCards || reportCards;
+                  
                   return (
-                    <div key={project.id} className="cursor-pointer group">
-                      {/* Icon container */}
+                    <div 
+                      key={project.id} 
+                      className="cursor-pointer group overflow-hidden"
+                      style={{ 
+                        display: 'flex',
+                        flexDirection: condensedCards ? 'row' : 'column',
+                        border: hasBorderedStyle ? '1px solid var(--border-base)' : '1px solid transparent',
+                        borderRadius: (condensedCards || reportCards) ? '6px' : '12px',
+                        height: condensedCards ? '90px' : (reportCards ? '258px' : 'auto'),
+                        padding: reportCards ? '12px' : '0',
+                        transition: 'border-color 0.3s ease, border-radius 0.3s ease, height 0.3s ease, padding 0.3s ease',
+                      }}
+                    >
+                      {/* Text area - shows first in condensed (row), second in vertical layouts */}
                       <div 
-                        className="w-full rounded-lg flex items-center justify-center mb-2.5 relative overflow-hidden" 
-                        style={{ 
-                          height: '162px',
-                          backgroundColor: projectColor ? `${projectColor}1F` : 'var(--bg-subtle)',
-                          transition: 'background-color 0.3s ease',
+                        className="flex items-start justify-between"
+                        style={{
+                          order: condensedCards ? 0 : 1,
+                          flex: condensedCards ? '1' : 'none',
+                          minWidth: condensedCards ? 0 : 'auto',
+                          padding: reportCards ? '12px 0 0 0' : ((condensedCards || containedCards) ? '12px' : '0'),
+                          marginTop: reportCards ? 'auto' : '0',
+                          transition: 'padding 0.3s ease, flex 0.3s ease, margin-top 0.3s ease',
                         }}
                       >
-                        {/* Hover overlay for non-colored state */}
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <p 
+                            className="text-fg-base leading-tight m-0"
+                            style={{ 
+                              fontSize: condensedCards ? '16px' : '14px',
+                              fontWeight: condensedCards ? 400 : 500,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: condensedCards ? 'nowrap' : 'normal',
+                              transition: 'font-size 0.3s ease',
+                            }}
+                          >
+                            {project.name}
+                          </p>
+                          <div className="flex items-center gap-1 leading-tight">
+                            <p className="text-xs text-fg-muted m-0">{project.fileCount}</p>
+                            {project.status && (
+                              <>
+                                <span className="text-fg-muted">{condensedCards ? ' ⋅ ' : ' • '}</span>
+                                <p className="text-xs text-fg-muted m-0">{project.status}</p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="shrink-0 self-start"
+                          style={{
+                            width: condensedCards ? '20px' : '32px',
+                            height: condensedCards ? '20px' : '32px',
+                            padding: condensedCards ? '4px' : '0',
+                            transition: 'width 0.3s ease, height 0.3s ease, padding 0.3s ease',
+                          }}
+                        >
+                          <MoreHorizontal 
+                            style={{
+                              width: condensedCards ? '12px' : '16px',
+                              height: condensedCards ? '12px' : '16px',
+                              transition: 'width 0.3s ease, height 0.3s ease',
+                            }}
+                          />
+                        </Button>
+                      </div>
+                      
+                      {/* Icon/Thumbnail area - shows second in condensed (row), first in vertical layouts */}
+                      <div 
+                        className="flex items-center justify-center relative overflow-hidden"
+                        style={{ 
+                          order: condensedCards ? 1 : 0,
+                          width: condensedCards ? '148px' : '100%',
+                          height: (condensedCards || reportCards) ? '90px' : (containedCards ? '128px' : '162px'),
+                          flexShrink: 0,
+                          backgroundColor: hasBackgroundEffect ? 'transparent' : (projectColor ? `${projectColor}1F` : 'var(--bg-subtle)'),
+                          borderRadius: condensedCards ? '0' : (reportCards ? '4px' : (containedCards ? '8px 8px 0 0' : '8px')),
+                          marginBottom: hasBorderedStyle ? '0' : '10px',
+                          transition: 'width 0.3s ease, height 0.3s ease, border-radius 0.3s ease, margin-bottom 0.3s ease, background-color 0.3s ease',
+                        }}
+                      >
+                        {/* AI Image background */}
+                        <div 
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            backgroundImage: projectAiImage ? `url(${projectAiImage})` : 'none',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            opacity: projectAiImage ? 1 : 0,
+                            transition: 'opacity 0.3s ease',
+                          }}
+                        />
+                        {/* Gradient layer with blur for soft mesh effect */}
+                        <div 
+                          className="absolute pointer-events-none"
+                          style={{
+                            inset: condensedCards ? '-10px' : '-20px',
+                            background: projectGradient || 'transparent',
+                            filter: condensedCards ? 'blur(10px)' : 'blur(20px)',
+                            transform: condensedCards ? 'none' : 'scale(1.1)',
+                            opacity: projectGradient ? 1 : 0,
+                            transition: 'opacity 0.3s ease, inset 0.3s ease, filter 0.3s ease, transform 0.3s ease',
+                          }}
+                        />
+                        {/* Hover overlay for non-colored/non-gradient state */}
                         <div 
                           className="absolute inset-0 bg-transparent group-hover:bg-bg-subtle-hover transition-colors pointer-events-none"
-                          style={{ opacity: projectColor ? 0 : 1 }}
+                          style={{ opacity: (projectColor || hasBackgroundEffect) ? 0 : 1 }}
                         />
-                        {/* Icon with mask for color */}
+                        {/* Icon with mask for color - hidden when gradient/AI image is enabled */}
                         <div 
-                          className="w-[72px] h-[72px] relative z-10"
+                          className="relative z-10"
                           style={{
+                            width: condensedCards ? '40px' : '72px',
+                            height: condensedCards ? '40px' : '72px',
                             backgroundColor: projectColor || '#CCCAC6',
                             WebkitMaskImage: `url(${iconSrc})`,
                             WebkitMaskSize: 'contain',
@@ -405,28 +637,10 @@ export default function VaultPage() {
                             maskSize: 'contain',
                             maskRepeat: 'no-repeat',
                             maskPosition: 'center',
-                            transition: 'background-color 0.3s ease',
+                            transition: 'width 0.3s ease, height 0.3s ease, background-color 0.3s ease, opacity 0.3s ease',
+                            opacity: hasBackgroundEffect ? 0 : 1,
                           }}
                         />
-                      </div>
-                      
-                      {/* Title and menu */}
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-fg-base leading-tight m-0">{project.name}</p>
-                          <div className="flex items-center gap-1 leading-tight">
-                            <p className="text-xs text-fg-muted m-0">{project.fileCount}</p>
-                            {project.status && (
-                              <>
-                                <span className="text-fg-disabled">•</span>
-                                <p className="text-xs text-fg-muted m-0">{project.status}</p>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
                   );
@@ -451,13 +665,195 @@ export default function VaultPage() {
             {/* Toggle Section */}
             <div className="border-b border-border-base" style={{ padding: '4px 0' }}>
               <div style={{ padding: '0 8px' }}>
+                {/* Contained Cards Switch */}
+                <div className="flex items-center justify-between" style={{ padding: '8px', borderRadius: '6px' }}>
+                  <button
+                    onClick={() => {
+                      setContainedCards(!containedCards);
+                      // Card styles are mutually exclusive
+                      if (!containedCards) {
+                        setCondensedCards(false);
+                        setReportCards(false);
+                      }
+                    }}
+                    className="flex items-center cursor-pointer"
+                    style={{ gap: '8px' }}
+                  >
+                    <div className="relative" style={{ width: '26px', height: '16px' }}>
+                      <div 
+                        className={`absolute inset-0 rounded-full transition-colors ${
+                          containedCards ? 'bg-fg-base' : 'bg-border-strong'
+                        }`}
+                      />
+                      <div 
+                        className="absolute bg-bg-base rounded-full transition-all"
+                        style={{ 
+                          top: '2px', 
+                          left: containedCards ? '12px' : '2px',
+                          width: '12px', 
+                          height: '12px',
+                          boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.15)',
+                        }}
+                      />
+                    </div>
+                    <span className="text-fg-base" style={{ fontSize: '14px', lineHeight: '20px' }}>
+                      Contained cards
+                    </span>
+                  </button>
+                </div>
+                
+                {/* Condensed Cards Switch */}
+                <div className="flex items-center justify-between" style={{ padding: '8px', borderRadius: '6px' }}>
+                  <button
+                    onClick={() => {
+                      setCondensedCards(!condensedCards);
+                      // Card styles are mutually exclusive
+                      if (!condensedCards) {
+                        setContainedCards(false);
+                        setReportCards(false);
+                      }
+                    }}
+                    className="flex items-center cursor-pointer"
+                    style={{ gap: '8px' }}
+                  >
+                    <div className="relative" style={{ width: '26px', height: '16px' }}>
+                      <div 
+                        className={`absolute inset-0 rounded-full transition-colors ${
+                          condensedCards ? 'bg-fg-base' : 'bg-border-strong'
+                        }`}
+                      />
+                      <div 
+                        className="absolute bg-bg-base rounded-full transition-all"
+                        style={{ 
+                          top: '2px', 
+                          left: condensedCards ? '12px' : '2px',
+                          width: '12px', 
+                          height: '12px',
+                          boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.15)',
+                        }}
+                      />
+                    </div>
+                    <span className="text-fg-base" style={{ fontSize: '14px', lineHeight: '20px' }}>
+                      Condensed cards
+                    </span>
+                  </button>
+                </div>
+                
+                {/* Report Cards Switch */}
+                <div className="flex items-center justify-between" style={{ padding: '8px', borderRadius: '6px' }}>
+                  <button
+                    onClick={() => {
+                      setReportCards(!reportCards);
+                      // Card styles are mutually exclusive
+                      if (!reportCards) {
+                        setContainedCards(false);
+                        setCondensedCards(false);
+                      }
+                    }}
+                    className="flex items-center cursor-pointer"
+                    style={{ gap: '8px' }}
+                  >
+                    <div className="relative" style={{ width: '26px', height: '16px' }}>
+                      <div 
+                        className={`absolute inset-0 rounded-full transition-colors ${
+                          reportCards ? 'bg-fg-base' : 'bg-border-strong'
+                        }`}
+                      />
+                      <div 
+                        className="absolute bg-bg-base rounded-full transition-all"
+                        style={{ 
+                          top: '2px', 
+                          left: reportCards ? '12px' : '2px',
+                          width: '12px', 
+                          height: '12px',
+                          boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.15)',
+                        }}
+                      />
+                    </div>
+                    <span className="text-fg-base" style={{ fontSize: '14px', lineHeight: '20px' }}>
+                      Report cards
+                    </span>
+                  </button>
+                </div>
+                
+                {/* Gradients Switch */}
+                <div className="flex items-center justify-between" style={{ padding: '8px', borderRadius: '6px' }}>
+                  <button
+                    onClick={() => handleToggleGradients(!gradientsEnabled)}
+                    className="flex items-center cursor-pointer"
+                    style={{ gap: '8px' }}
+                  >
+                    <div className="relative" style={{ width: '26px', height: '16px' }}>
+                      <div 
+                        className={`absolute inset-0 rounded-full transition-colors ${
+                          gradientsEnabled ? 'bg-fg-base' : 'bg-border-strong'
+                        }`}
+                      />
+                      <div 
+                        className="absolute bg-bg-base rounded-full transition-all"
+                        style={{ 
+                          top: '2px', 
+                          left: gradientsEnabled ? '12px' : '2px',
+                          width: '12px', 
+                          height: '12px',
+                          boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.15)',
+                        }}
+                      />
+                    </div>
+                    <span className="text-fg-base" style={{ fontSize: '14px', lineHeight: '20px' }}>
+                      Fluid gradients
+                    </span>
+                  </button>
+                  
+                  {/* Refresh Gradients Button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={generateRandomGradients}
+                    disabled={!gradientsEnabled}
+                    className="h-7 w-7 p-0 text-fg-muted hover:text-fg-base disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {/* AI Images Switch */}
+                <div className="flex items-center justify-between" style={{ padding: '8px', borderRadius: '6px' }}>
+                  <button
+                    onClick={() => handleToggleAiImages(!aiImagesEnabled)}
+                    className="flex items-center cursor-pointer"
+                    style={{ gap: '8px' }}
+                  >
+                    <div className="relative" style={{ width: '26px', height: '16px' }}>
+                      <div 
+                        className={`absolute inset-0 rounded-full transition-colors ${
+                          aiImagesEnabled ? 'bg-fg-base' : 'bg-border-strong'
+                        }`}
+                      />
+                      <div 
+                        className="absolute bg-bg-base rounded-full transition-all"
+                        style={{ 
+                          top: '2px', 
+                          left: aiImagesEnabled ? '12px' : '2px',
+                          width: '12px', 
+                          height: '12px',
+                          boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.15)',
+                        }}
+                      />
+                    </div>
+                    <span className="text-fg-base" style={{ fontSize: '14px', lineHeight: '20px' }}>
+                      Generative imagery
+                    </span>
+                  </button>
+                </div>
+                
+                {/* Colors Switch */}
                 <div className="flex items-center justify-between" style={{ padding: '8px', borderRadius: '6px' }}>
                   <button
                     onClick={() => handleToggleColors(!colorsEnabled)}
                     className="flex items-center cursor-pointer"
                     style={{ gap: '8px' }}
                   >
-                    {/* Switch */}
                     <div className="relative" style={{ width: '26px', height: '16px' }}>
                       <div 
                         className={`absolute inset-0 rounded-full transition-colors ${
