@@ -95,9 +95,11 @@ export default function VaultPage() {
   const projectNameInputRef = useRef<HTMLInputElement>(null);
   const colorPopoverRef = useRef<HTMLDivElement>(null);
   const paletteDropdownButtonRef = useRef<HTMLButtonElement>(null);
+  const bottomBarRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   
   // Card style states
+  const [titleFont, setTitleFont] = useState<'sans' | 'serif'>('sans');
   const [containedCards, setContainedCards] = useState(false);
   const [condensedCards, setCondensedCards] = useState(false);
   const [reportCards, setReportCards] = useState(false);
@@ -125,6 +127,13 @@ export default function VaultPage() {
   const [colorPopoverOpen, setColorPopoverOpen] = useState(false);
   const [selectedPalette, setSelectedPalette] = useState<keyof typeof colorPalettes>('dusty');
   const [paletteDropdownOpen, setPaletteDropdownOpen] = useState(false);
+  
+  // Bottom bar state
+  const [bottomBarOpen, setBottomBarOpen] = useState(true);
+  const [fontDropdownOpen, setFontDropdownOpen] = useState(false);
+  const [shapeDropdownOpen, setShapeDropdownOpen] = useState(false);
+  const [styleDropdownOpen, setStyleDropdownOpen] = useState(false);
+  const [colorDropdownOpen, setColorDropdownOpen] = useState(false);
   const [skittlesColors, setSkittlesColors] = useState<Record<string, string>>({
     color1: '#F59E0B',
     color2: '#EF4444',
@@ -161,6 +170,9 @@ export default function VaultPage() {
     setColorsEnabled(enabled);
     if (enabled) {
       generateRandomColors();
+      // Disable other background options
+      setGradientsEnabled(false);
+      setAiImagesEnabled(false);
     }
   };
 
@@ -300,7 +312,7 @@ export default function VaultPage() {
     }
   };
 
-  // Keyboard shortcut 'C' to toggle color popover
+  // Keyboard shortcut 'C' to toggle bottom bar
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger if user is typing in an input
@@ -309,14 +321,87 @@ export default function VaultPage() {
       }
       
       if (e.key === 'c' || e.key === 'C') {
-        setColorPopoverOpen(prev => !prev);
+        setBottomBarOpen(prev => {
+          if (prev) {
+            // Close all dropdowns when closing bar
+            setFontDropdownOpen(false);
+            setShapeDropdownOpen(false);
+            setStyleDropdownOpen(false);
+            setColorDropdownOpen(false);
+          }
+          return !prev;
+        });
+      }
+      
+      // 'F' key cycles through fonts: Sans → Serif → Sans...
+      if (e.key === 'f' || e.key === 'F') {
+        setTitleFont(prev => prev === 'sans' ? 'serif' : 'sans');
+      }
+      
+      // 'S' key cycles through shapes: Default → Contained → Condensed → Report → Default...
+      if (e.key === 's' || e.key === 'S') {
+        if (!containedCards && !condensedCards && !reportCards) {
+          // Default → Contained
+          setContainedCards(true);
+        } else if (containedCards) {
+          // Contained → Condensed
+          setContainedCards(false);
+          setCondensedCards(true);
+        } else if (condensedCards) {
+          // Condensed → Report
+          setCondensedCards(false);
+          setReportCards(true);
+        } else if (reportCards) {
+          // Report → Default
+          setReportCards(false);
+        }
+      }
+      
+      // 'D' key cycles through styles: Mono → Colors → Gradients → Generative → Mono...
+      if (e.key === 'd' || e.key === 'D') {
+        if (!colorsEnabled && !gradientsEnabled && !aiImagesEnabled) {
+          // Mono → Colors
+          handleToggleColors(true);
+        } else if (colorsEnabled) {
+          // Colors → Gradients
+          handleToggleGradients(true);
+        } else if (gradientsEnabled) {
+          // Gradients → Generative
+          handleToggleAiImages(true);
+        } else if (aiImagesEnabled) {
+          // Generative → Mono
+          setAiImagesEnabled(false);
+        }
+      }
+      
+      // Escape to close bottom bar
+      if (e.key === 'Escape' && bottomBarOpen) {
+        setBottomBarOpen(false);
+        setFontDropdownOpen(false);
+        setShapeDropdownOpen(false);
+        setStyleDropdownOpen(false);
+        setColorDropdownOpen(false);
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [bottomBarOpen, containedCards, condensedCards, reportCards, colorsEnabled, gradientsEnabled, aiImagesEnabled]);
 
+  // Click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (bottomBarRef.current && !bottomBarRef.current.contains(e.target as Node)) {
+        setFontDropdownOpen(false);
+        setShapeDropdownOpen(false);
+        setStyleDropdownOpen(false);
+        setColorDropdownOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Auto-focus the project name input when dialog opens
   useEffect(() => {
@@ -518,7 +603,7 @@ export default function VaultPage() {
                         flexDirection: condensedCards ? 'row' : 'column',
                         border: hasBorderedStyle ? '1px solid var(--border-base)' : '1px solid transparent',
                         borderRadius: (condensedCards || reportCards) ? '6px' : '12px',
-                        height: condensedCards ? '90px' : (reportCards ? '258px' : 'auto'),
+                        height: condensedCards ? '90px' : (reportCards ? '300px' : 'auto'),
                         padding: reportCards ? '12px' : '0',
                         transition: 'border-color 0.3s ease, border-radius 0.3s ease, height 0.3s ease, padding 0.3s ease',
                       }}
@@ -539,12 +624,12 @@ export default function VaultPage() {
                           <p 
                             className="text-fg-base leading-tight m-0"
                             style={{ 
-                              fontSize: condensedCards ? '16px' : '14px',
-                              fontWeight: condensedCards ? 400 : 500,
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              fontFamily: titleFont === 'serif' ? '"Harvey Serif", Georgia, serif' : 'inherit',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               whiteSpace: condensedCards ? 'nowrap' : 'normal',
-                              transition: 'font-size 0.3s ease',
                             }}
                           >
                             {project.name}
@@ -586,7 +671,7 @@ export default function VaultPage() {
                         style={{ 
                           order: condensedCards ? 1 : 0,
                           width: condensedCards ? '148px' : '100%',
-                          height: (condensedCards || reportCards) ? '90px' : (containedCards ? '128px' : '162px'),
+                          height: condensedCards ? '90px' : (reportCards ? '120px' : (containedCards ? '128px' : '162px')),
                           flexShrink: 0,
                           backgroundColor: hasBackgroundEffect ? 'transparent' : (projectColor ? `${projectColor}1F` : 'var(--bg-subtle)'),
                           borderRadius: condensedCards ? '0' : (reportCards ? '4px' : (containedCards ? '8px 8px 0 0' : '8px')),
@@ -649,8 +734,8 @@ export default function VaultPage() {
             </div>
           </div>
 
-        {/* Color Palette Popover */}
-        {colorPopoverOpen && (
+        {/* Color Palette Popover - Hidden, kept for reference */}
+        {colorPopoverOpen && false && (
           <div 
             ref={colorPopoverRef}
             className="fixed bg-bg-base border border-border-base overflow-hidden"
@@ -1015,6 +1100,367 @@ export default function VaultPage() {
             </div>
           </div>
         )}
+
+      {/* Bottom Bar Controls */}
+      <div 
+        ref={bottomBarRef}
+        className="fixed left-1/2 -translate-x-1/2 bg-bg-base border border-border-base flex items-center"
+        style={{
+          bottom: bottomBarOpen ? '24px' : '-80px',
+          borderRadius: '12px',
+          padding: '4px',
+          gap: '4px',
+          transition: 'bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          zIndex: 100,
+        }}
+      >
+        {/* Font Section */}
+        <div className="flex items-center" style={{ gap: '4px' }}>
+          <span className="text-fg-muted px-3" style={{ fontSize: '13px', fontWeight: 500 }}>Font</span>
+          <div className="relative">
+            <button
+              onClick={() => {
+                setFontDropdownOpen(!fontDropdownOpen);
+                setShapeDropdownOpen(false);
+                setStyleDropdownOpen(false);
+                setColorDropdownOpen(false);
+              }}
+              className={`flex items-center gap-2 rounded-md transition-colors ${
+                fontDropdownOpen ? 'bg-bg-subtle' : 'hover:bg-bg-subtle'
+              }`}
+              style={{ fontSize: '13px', fontWeight: 500, padding: '4px 8px' }}
+            >
+              <span className="text-fg-base">
+                {titleFont === 'serif' ? 'Serif' : 'Sans'}
+              </span>
+              <svg 
+                width="10" 
+                height="6" 
+                viewBox="0 0 10 6" 
+                fill="none" 
+                className="text-fg-muted transition-transform"
+                style={{ transform: fontDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              >
+                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            
+            {/* Font Dropdown - expands upward */}
+            {fontDropdownOpen && (
+              <div 
+                className="absolute left-0 bg-bg-base border border-border-base"
+                style={{
+                  bottom: '100%',
+                  marginBottom: '6px',
+                  minWidth: '120px',
+                  borderRadius: '6px',
+                  boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.12)',
+                  padding: '4px',
+                }}
+              >
+                {[
+                  { id: 'sans', label: 'Sans' },
+                  { id: 'serif', label: 'Serif' },
+                ].map((font) => (
+                  <button
+                    key={font.id}
+                    onClick={() => {
+                      setTitleFont(font.id as 'sans' | 'serif');
+                      setFontDropdownOpen(false);
+                    }}
+                    className={`w-full text-left transition-colors ${
+                      titleFont === font.id
+                        ? 'bg-bg-subtle text-fg-base'
+                        : 'hover:bg-bg-subtle text-fg-base'
+                    }`}
+                    style={{ 
+                      padding: '6px 8px', 
+                      fontSize: '14px', 
+                      lineHeight: '20px',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    {font.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Divider */}
+        <div className="w-px h-6 bg-border-base mx-1" />
+        
+        {/* Shape Section */}
+        <div className="flex items-center" style={{ gap: '4px' }}>
+          <span className="text-fg-muted px-3" style={{ fontSize: '13px', fontWeight: 500 }}>Shape</span>
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShapeDropdownOpen(!shapeDropdownOpen);
+                setFontDropdownOpen(false);
+                setStyleDropdownOpen(false);
+                setColorDropdownOpen(false);
+              }}
+              className={`flex items-center gap-2 rounded-md transition-colors ${
+                shapeDropdownOpen ? 'bg-bg-subtle' : 'hover:bg-bg-subtle'
+              }`}
+              style={{ fontSize: '13px', fontWeight: 500, padding: '4px 8px' }}
+            >
+              <span className="text-fg-base">
+                {reportCards ? 'Report' : condensedCards ? 'Condensed' : containedCards ? 'Contained' : 'Default'}
+              </span>
+              <svg 
+                width="10" 
+                height="6" 
+                viewBox="0 0 10 6" 
+                fill="none" 
+                className="text-fg-muted transition-transform"
+                style={{ transform: shapeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              >
+                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            
+            {/* Shape Dropdown - expands upward */}
+            {shapeDropdownOpen && (
+              <div 
+                className="absolute left-0 bg-bg-base border border-border-base"
+                style={{
+                  bottom: '100%',
+                  marginBottom: '6px',
+                  minWidth: '120px',
+                  borderRadius: '6px',
+                  boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.12)',
+                  padding: '4px',
+                }}
+              >
+                {[
+                  { id: 'default', label: 'Default' },
+                  { id: 'contained', label: 'Contained' },
+                  { id: 'condensed', label: 'Condensed' },
+                  { id: 'report', label: 'Report' },
+                ].map((shape) => (
+                  <button
+                    key={shape.id}
+                    onClick={() => {
+                      setContainedCards(shape.id === 'contained');
+                      setCondensedCards(shape.id === 'condensed');
+                      setReportCards(shape.id === 'report');
+                      setShapeDropdownOpen(false);
+                    }}
+                    className={`w-full text-left transition-colors ${
+                      (shape.id === 'default' && !containedCards && !condensedCards && !reportCards) ||
+                      (shape.id === 'contained' && containedCards) ||
+                      (shape.id === 'condensed' && condensedCards) ||
+                      (shape.id === 'report' && reportCards)
+                        ? 'bg-bg-subtle text-fg-base'
+                        : 'hover:bg-bg-subtle text-fg-base'
+                    }`}
+                    style={{ 
+                      padding: '6px 8px', 
+                      fontSize: '14px', 
+                      lineHeight: '20px',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    {shape.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Divider */}
+        <div className="w-px h-6 bg-border-base mx-1" />
+        
+        {/* Style Section */}
+        <div className="flex items-center" style={{ gap: '4px' }}>
+          <span className="text-fg-muted px-3" style={{ fontSize: '13px', fontWeight: 500 }}>Style</span>
+          <div className="relative">
+            <button
+              onClick={() => {
+                setStyleDropdownOpen(!styleDropdownOpen);
+                setFontDropdownOpen(false);
+                setShapeDropdownOpen(false);
+                setColorDropdownOpen(false);
+              }}
+              className={`flex items-center gap-2 rounded-md transition-colors ${
+                styleDropdownOpen ? 'bg-bg-subtle' : 'hover:bg-bg-subtle'
+              }`}
+              style={{ fontSize: '13px', fontWeight: 500, padding: '4px 8px' }}
+            >
+              <span className="text-fg-base">
+                {aiImagesEnabled ? 'Generative Imagery' : gradientsEnabled ? 'Gradients' : colorsEnabled ? 'Colors' : 'Mono'}
+              </span>
+              <svg 
+                width="10" 
+                height="6" 
+                viewBox="0 0 10 6" 
+                fill="none" 
+                className="text-fg-muted transition-transform"
+                style={{ transform: styleDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              >
+                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            
+            {/* Style Dropdown - expands upward */}
+            {styleDropdownOpen && (
+              <div 
+                className="absolute left-0 bg-bg-base border border-border-base"
+                style={{
+                  bottom: '100%',
+                  marginBottom: '6px',
+                  minWidth: '160px',
+                  borderRadius: '6px',
+                  boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.12)',
+                  padding: '4px',
+                }}
+              >
+                {[
+                  { id: 'none', label: 'Mono' },
+                  { id: 'colors', label: 'Colors' },
+                  { id: 'gradients', label: 'Gradients' },
+                  { id: 'generative', label: 'Generative Imagery' },
+                ].map((style) => (
+                  <button
+                    key={style.id}
+                    onClick={() => {
+                      if (style.id === 'none') {
+                        setColorsEnabled(false);
+                        setGradientsEnabled(false);
+                        setAiImagesEnabled(false);
+                      } else if (style.id === 'colors') {
+                        handleToggleColors(true);
+                      } else if (style.id === 'gradients') {
+                        handleToggleGradients(true);
+                      } else if (style.id === 'generative') {
+                        handleToggleAiImages(true);
+                      }
+                      setStyleDropdownOpen(false);
+                    }}
+                    className={`w-full text-left transition-colors ${
+                      (style.id === 'none' && !colorsEnabled && !gradientsEnabled && !aiImagesEnabled) ||
+                      (style.id === 'colors' && colorsEnabled) ||
+                      (style.id === 'gradients' && gradientsEnabled) ||
+                      (style.id === 'generative' && aiImagesEnabled)
+                        ? 'bg-bg-subtle text-fg-base'
+                        : 'hover:bg-bg-subtle text-fg-base'
+                    }`}
+                    style={{ 
+                      padding: '6px 8px', 
+                      fontSize: '14px', 
+                      lineHeight: '20px',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    {style.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Divider - only show if colors is enabled (not gradients or generative imagery) */}
+        {colorsEnabled && !gradientsEnabled && !aiImagesEnabled && (
+          <>
+            <div className="w-px h-6 bg-border-base mx-1" />
+            
+            {/* Color Palette Section */}
+            <div className="flex items-center" style={{ gap: '4px' }}>
+              <span className="text-fg-muted px-3" style={{ fontSize: '13px', fontWeight: 500 }}>Color</span>
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setColorDropdownOpen(!colorDropdownOpen);
+                    setFontDropdownOpen(false);
+                    setShapeDropdownOpen(false);
+                    setStyleDropdownOpen(false);
+                  }}
+                  className={`flex items-center gap-2 rounded-md transition-colors ${
+                    colorDropdownOpen ? 'bg-bg-subtle' : 'hover:bg-bg-subtle'
+                  }`}
+                  style={{ fontSize: '13px', fontWeight: 500, padding: '4px 8px' }}
+                >
+                  <span className="text-fg-base">{colorPalettes[selectedPalette].label}</span>
+                  <svg 
+                    width="10" 
+                    height="6" 
+                    viewBox="0 0 10 6" 
+                    fill="none" 
+                    className="text-fg-muted transition-transform"
+                    style={{ transform: colorDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                  >
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                
+                {/* Color Palette Dropdown - expands upward */}
+                {colorDropdownOpen && (
+                  <div 
+                    className="absolute left-0 bg-bg-base border border-border-base"
+                    style={{
+                      bottom: '100%',
+                      marginBottom: '6px',
+                      minWidth: '120px',
+                      borderRadius: '6px',
+                      boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.12)',
+                      padding: '4px',
+                    }}
+                  >
+                    {Object.values(colorPalettes).map((palette) => (
+                      <button
+                        key={palette.id}
+                        onClick={() => {
+                          handlePaletteSelect(palette.id as keyof typeof colorPalettes);
+                          setColorDropdownOpen(false);
+                        }}
+                        className={`w-full text-left transition-colors ${
+                          selectedPalette === palette.id
+                            ? 'bg-bg-subtle text-fg-base'
+                            : 'hover:bg-bg-subtle text-fg-base'
+                        }`}
+                        style={{ 
+                          padding: '6px 8px', 
+                          fontSize: '14px', 
+                          lineHeight: '20px',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        {palette.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Refresh button */}
+              <button
+                onClick={generateRandomColors}
+                className="p-1.5 rounded-lg hover:bg-bg-subtle transition-colors text-fg-muted hover:text-fg-base"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </>
+        )}
+        
+        {/* Gradients refresh button */}
+        {gradientsEnabled && !colorsEnabled && !aiImagesEnabled && (
+          <>
+            <div className="w-px h-6 bg-border-base mx-1" />
+            <button
+              onClick={generateRandomGradients}
+              className="p-1.5 rounded-lg hover:bg-bg-subtle transition-colors text-fg-muted hover:text-fg-base"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+            </button>
+          </>
+        )}
+      </div>
 
       {/* Create Project Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
