@@ -4,8 +4,8 @@ import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Harvey | Vault Demo",
-  description: "Professional Class AI for Legal Professionals",
+  title: "Project Card Sandbox",
+  description: "Project Card Sandbox",
 };
 
 export default function RootLayout({

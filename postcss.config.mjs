@@ -1,8 +1,5 @@
 const config = {
-  plugins: [
-    "@tailwindcss/postcss",
-    "postcss-easing-gradients"
-  ],
+  plugins: ["@tailwindcss/postcss"],
 };
 
 export default config;
